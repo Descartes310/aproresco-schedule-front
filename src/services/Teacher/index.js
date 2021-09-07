@@ -574,6 +574,12 @@ export const removeAvailabilityAssistants = (availability_id, assistant_id) => {
     }).catch(err => console.log(err));
 }
 
+export const getAvailabilityBookings = (availability_id) => {
+    return axios.get(`${routes.AVAILABILITY}/${availability_id}/booking`).then(res => {
+        return res.data;
+    }).catch(err => console.log(err));
+}
+
 export const getLoginCode = (phoneNumber) => {
     return axios.get(`${routes.TEACHER}/token?phoneNumber=${phoneNumber}`).then(res => {
         return res.data;

@@ -283,7 +283,6 @@ export const getBookingAvailability = (bookingId) => {
 }
 
 export const assignStudentToAnotherTeacher = (teacherId, studentId) => {
-    // console.log(`${routes.SERVER_ADDRESS}/meet/assign/${studentIds}/${teacherId}`);
     let data = {
         teacherId,
         studentId
@@ -294,7 +293,19 @@ export const assignStudentToAnotherTeacher = (teacherId, studentId) => {
             return res.data;
         })
         .catch(err => {
-            //alert(err.message);
+        })
+}
+export const unAssignStudentToAnotherTeacher = (teacherId, studentId) => {
+    let data = {
+        teacherId,
+        studentId
+    }
+
+    return axios.delete(`${routes.AVAILABILITY}/${teacherId}/booking/${studentId}`, data)
+        .then(res => {
+            return res.data;
+        })
+        .catch(err => {
         })
 }
 

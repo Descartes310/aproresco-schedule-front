@@ -6,15 +6,14 @@ import { useLocation } from "react-router-dom";
 import { Form, Row, Col, Card, Input } from 'antd';
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { getStudentListById } from '../../services/Student';
 import { faCircle } from '@fortawesome/free-solid-svg-icons';
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { assignStudents } from '../../Action-Reducer/Student/action';
 import { Table, PageHeader, Button, Spin, Tooltip } from 'antd';
 import { faCrown, faShieldAlt, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
-import { assignStudentToAnotherTeacher, assignMeetingToAnotherTeacher, findTeacherProfileByFirstNameAndLastName } from '../../services/Student';
-import { markTeacherAsPresent, markAsSupervisor, markAsAdmin, markAsApproved, updateAvailabilityAssistants, getSubjectById, removeAvailabilityAssistants } from '../../services/Teacher';
+import { assignStudentToAnotherTeacher, assignMeetingToAnotherTeacher, findTeacherProfileByFirstNameAndLastName, unAssignStudentToAnotherTeacher } from '../../services/Student';
+import { markTeacherAsPresent, markAsSupervisor, markAsAdmin, markAsApproved, updateAvailabilityAssistants, getSubjectById, getAvailabilityBookings, removeAvailabilityAssistants } from '../../services/Teacher';
 
 function StudentListOfTeacher(props) {
 
@@ -169,11 +168,11 @@ function StudentListOfTeacher(props) {
             var recordIdArray = [];
             setActive(false);
             records.map(record => {
+                console.log(record)
                 recordIdArray.push({ id: record.id, firstName: record.firstName, lastName: record.lastName });
                 return null;
             })
             setSelectedRow(recordIdArray);
-            dispatch(assignStudents(recordIdArray))
         }
     };
 
@@ -404,10 +403,11 @@ function StudentListOfTeacher(props) {
         setStudents(null);
         setStudentList(null);
         setStudentsTmp([])
-        getStudentListById(params.id).then(data => {
+        getAvailabilityBookings(params.id).then(data => {
             if (data) {
-                setStudentList(data.content);
-                data.content.forEach(student => {
+                setStudentList(data);
+                data.forEach(student => {
+                    console.log(student)
                     let datas = studentsTmp ? studentsTmp : [];
                     let elt = {};
                     elt.studentProfile = {};
@@ -415,7 +415,7 @@ function StudentListOfTeacher(props) {
                     elt.studentProfile.grade = student.studentProfile.grade;
                     elt.studentProfile.lastName = student.studentProfile.lastName;
                     // elt.studentProfile.subject = student.subject;
-                    elt.studentProfile.id = student.studentProfile.id;
+                    elt.studentProfile.id = student.id;
                     elt.studentProfile.onlineStatus = student.studentProfile.onlineStatus;
                     elt.studentProfile.studentProfile = student.studentProfile;
                     if (!datas.map(d => d.id).includes(elt.studentProfile.id)) {
@@ -434,8 +434,7 @@ function StudentListOfTeacher(props) {
     }
 
     const assignStudent = () => {
-        console.log(active);
-        if (!active) {
+        if (active) {
             let studentIdArray = [];
             assignStudentList.map((student) => {
                 studentIdArray.push(student.id);
@@ -444,8 +443,7 @@ function StudentListOfTeacher(props) {
             studentIdArray.map(studentId => {
                 assignStudentToAnotherTeacher(params.id, studentId)
                 .then(res => {
-                    setStudentList(null);
-                    getListView();
+                    window.location.reload();
                 });
                 return null
             })
@@ -453,8 +451,19 @@ function StudentListOfTeacher(props) {
             dispatch(assignStudents([]));
             
         } else {
-            dispatch(assignStudents(selectedRow))
-            //history.push('/teacherlist');
+            let studentIdArray = [];
+            selectedRow.map((student) => {
+                studentIdArray.push(student.id);
+                return null;
+            })
+            studentIdArray.map(studentId => {
+                unAssignStudentToAnotherTeacher(params.id, studentId)
+                .then(res => {
+                    window.location.reload();
+                });
+                return null
+            })
+            dispatch(assignStudents([]));
         }
     };
 
@@ -551,11 +560,10 @@ function StudentListOfTeacher(props) {
                             style={{ display: !assigningStatus ? 'block' : 'none', marginLeft: '20px' }}
                             disabled={(assignStudentList.length > 0 && active) || selectedRow.length > 0 ? false : true}
                             onClick={() => {
-                                console.log("Click !")
                                 assignStudent()
                             }}
                         >
-                            ASSIGN STUDENT
+                            { active ? 'ASSIGN STUDENTS' : 'UNASSIGN STUDENTS' }
                         </Button>
                     </div>
                 ]}

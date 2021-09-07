@@ -83,6 +83,7 @@ function CreateBooking() {
         }
         let _children = studentList.filter(c => c.id === value.id)[0];
         setChildren(_children);
+        console.log(_children);
         getSchedule(_children ? _children.grade ? _children.grade : 0 : 0, -1).then(data => {
             setSchedules(data.content)
             var obj = {};

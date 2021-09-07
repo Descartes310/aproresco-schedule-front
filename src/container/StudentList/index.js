@@ -236,7 +236,8 @@ function StudentList() {
                 };
             },
             render: (record) => {
-                let course = getOneCourse(record);
+                // let course = getOneCourse(record);
+                let course = record.schedule.course;
                 return (
                     course && (
                         <div
@@ -248,8 +249,10 @@ function StudentList() {
                         //     }
                         // }}
                         >
-                            {!editableRow.includes(record) ? course.subject.name : <Form layout="inline">
-                                <Form.Item>
+                            {/* {!editableRow.includes(record) ?  */}
+                            { course.subject.name }
+                             {/* <Form layout="inline"> */}
+                                {/* <Form.Item>
                                     <Input
                                         type="text"
                                         placeholder="Subject"
@@ -263,7 +266,7 @@ function StudentList() {
                                         }}
                                     />
                                 </Form.Item>
-                            </Form>}
+                            </Form>} */}
                         </div>
                     )
                 )
@@ -288,7 +291,8 @@ function StudentList() {
                 };
             },
             render: (record) => {
-                let course = getOneCourse(record);
+                // let course = getOneCourse(record);
+                let course = record.schedule.course;
                 var min = course ? course.grades[0] : 0;
                 return (
                     <span>{computeMinGrade(min, course ? course : null, record.studentProfile.grade) > 0 ? `${record.studentProfile.grade ? record.studentProfile.grade : 0} (${computeMinGrade(min, course ? course : null, record.studentProfile.grade)})` : record.studentProfile.grade}</span>

@@ -21,7 +21,8 @@ function UpdateBooking() {
 
     useEffect(() => {
         getAllCourses();
-        setSubjec(data.schedule.id);
+        console.log(data)
+        // setSubjec(data.schedule.id);
         getSchedule(data.studentProfile.grade, -1).then(data => {
             setSchedules(data.content)
 
@@ -122,10 +123,10 @@ function UpdateBooking() {
                             <Select onChange={(e) => changeSubject(e)} value={schedules.find(s => s.id === subjec) ? subjec : null}>
                                 <option value={null}>Select a subject</option>
                                 {
-                                    schedules.filter(s => courses.find(c => c.id === s.courseId)).map(s => {
+                                    schedules.filter(s => courses.find(c => c.id === s.course.id)).map((s, index) => {
                                         return (
-                                            <option value={s.id} key={s.id}>
-                                                {courses.find(c => c.id === s.courseId).name + " | " } 
+                                            <option value={s.id} key={index}>
+                                                {courses.find(c => c.id === s.course.id).subject.name + " | " } 
                                                 {/* {s.startDate} */}
                                                 <Moment local format="D MMM YYYY HH:MM" withTitle>{s.startDate}</Moment>
                                             </option>
