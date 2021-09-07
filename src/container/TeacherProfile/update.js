@@ -124,7 +124,7 @@ function CreateTeacher() {
         let tgs=[]
         tags.map(res => tgs.push({"id": res}))
 
-        updateTeacher(teacher.id, formData.firstName, formData.lastName, formData.iemail, grades, subjects.map(sid => { return { id: sid }}), phone, formData.schoolName, formData.schoolBoard, tgs.filter(t => t.id !== 0)).then(data => {
+        updateTeacher(teacher.id, formData.firstName, formData.lastName, formData.iemail, grades, subjects.map(sid => { return sid }), phone, formData.schoolName, formData.schoolBoard, tgs.filter(t => t.id !== 0)).then(data => {
             history.push(`/teacherprofiles`);
             // history.push(`/studentlist/teacher/${data.data.id}`, { teacher: data.data })
         }).catch(err => {
@@ -231,7 +231,7 @@ function CreateTeacher() {
                                     <Select mode="multiple"
                                         allowClear
                                         open={open2} 
-                                        defaultValue={ teacher.subjects.map(s => s.id) }
+                                        defaultValue={ teacher.subjects ? teacher.subjects.map(s => s.id) : [] }
                                         onFocus={() => setOpen2(true)}
                                         onBlur={() => setOpen2(false)}
                                         style={{ width: '100%' }}

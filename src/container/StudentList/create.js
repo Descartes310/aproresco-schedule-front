@@ -83,7 +83,7 @@ function CreateBooking() {
         }
         let _children = studentList.filter(c => c.id === value.id)[0];
         setChildren(_children);
-        getSchedule(_children.grade ? _children.grade : 0, -1).then(data => {
+        getSchedule(_children ? _children.grade ? _children.grade : 0 : 0, -1).then(data => {
             setSchedules(data.content)
             var obj = {};
             for (var i = 0, len = data.content.length; i < len; i++)
@@ -180,10 +180,10 @@ function CreateBooking() {
                 };
             },
             render: (record) => {
-                let course = courses.find(c => c.id === record.courseId);
+                // let course = courses.find(c => c.id === record.courseId);
                 return (
                     <div>
-                        {course ? course.subject.name : ''}
+                        {record.course ? record.course.subject ? record.course.subject.name : '' : ''}
                     </div>
                 )
             },
@@ -251,7 +251,7 @@ function CreateBooking() {
             title: 'Duration',
             key: 'durationInMinutes',
             render: (record) => {
-                let course = courses.find(c => c.id === record.courseId);
+                let course = courses.find(c => c.id === record.course.id);
                 return (
                     <div>
                         {course ? course.durationInMinutes + ' min' : ''}
@@ -263,7 +263,7 @@ function CreateBooking() {
             title: 'Grades',
             key: 'grades',
             render: (record) => {
-                let course = courses.find(c => c.id === record.courseId);
+                let course = record.course ? record.course : null
                 if (!course) {
                     course = {};
                     course.grade = []
@@ -279,7 +279,7 @@ function CreateBooking() {
             title: 'Price',
             key: 'price',
             render: (record) => {
-                let course = courses.find(c => c.id === record.courseId);
+                let course = courses.find(c => c.id === record.course.id);
                 return (
                     course && (
                         <div>
@@ -304,7 +304,7 @@ function CreateBooking() {
             title: 'Language',
             key: 'language',
             render: (record) => {
-                let course = courses.find(c => c.id === record.courseId);
+                let course = courses.find(c => c.id === record.course.id);
                 return (
                     <div>
                         {course ? course.language : ''}

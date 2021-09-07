@@ -36,18 +36,20 @@ function CreateAvailibility() {
         setDates([]);
         setDat(null);
         let _children = studentList.filter(c => c.id === id)[0];
+        console.log(_children)
+        console.log(courses)
         setChildren(_children);
         getSchedule(1).then(data => {
             setSchedules(data.content);
             setDat(null);
-            setDates([...new Map(data.content.filter(s => _children.subjects.map(cs => cs.id).includes(courses.find(c => c.id === s.courseId) ? courses.find(c => c.id === s.courseId).subject.id : 'null')).map(item => [item['createDate'], item])).values()]);
+            setDates([...new Map(data.content.filter(s => _children.subjects.map(cs => cs.id).includes(courses.find(c => c.id === s.course.id) ? courses.find(c => c.id === s.course.id).subject.id : 'null')).map(item => [item['createDate'], item])).values()]);
             // setDates([...new Map(data.content.map(item => [item['createDate'], item])).values()]);
         });
     }
 
     const changeDate = (date) => {
         setDat(date);
-        setEnds([...new Map(schedules.filter(s => children.subjects.includes(s.subject)).filter(s => s.startDate === date).map(item => [item['createDate'], item])).values()]);
+        setEnds([...new Map(schedules.filter(s => children.subjects.map(cs => cs.id).includes(s.course ? s.course.subject ? s.course.subject.id : 0 : 0)).filter(s => s.startDate === date).map(item => [item['createDate'], item])).values()]);
         //setEnds([...new Map(schedules.filter(s => s.startDate == date).map(item => [item['createDate'], item])).values()]);
     }
 

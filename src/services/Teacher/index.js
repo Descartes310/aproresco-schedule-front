@@ -539,10 +539,11 @@ export const updateParent = (id, firstName, lastName, phoneNumber, countryCode, 
 }
 
 export const createMessage = (type, content, recipients) => {
+    let user = JSON.parse(localStorage.getItem('user'));
     let data = {
         content,
         recipients,
-        sender: { id: '8a0081ed7b1d0a57017b1e706ed8003b'}
+        sender: { id: user.id}
     }
     return axios.post(`${routes.MESSAGE}/${type}`, data).then(res => {
         return res;

@@ -28,7 +28,6 @@ function UpdateSchedule() {
     const [schedule] = useState(location.state.schedule);
 
     useEffect(() => {
-        console.log(schedule);
         let s = schedule.startDate.replaceAll('/', '-').split(' ')[0].split('-');
         let f = schedule.endDate.replaceAll('/', '-').split(' ')[0].split('-');
         setStartDate(s[2] + '-' + s[0] + '-' + s[1]);
@@ -50,7 +49,6 @@ function UpdateSchedule() {
                     setCourses(data.content);
                     setCourse(data.content.find(c => c.id === schedule.courseId).name);
                     setDefaultCourse(data.content.find(c => c.id === schedule.courseId));
-                    console.log("Course => ", data.content.find(c => c.id === schedule.courseId))
                     setGrade(data.content.find(c => c.id === schedule.courseId).grades[0]);
                 }
             }
@@ -87,7 +85,7 @@ function UpdateSchedule() {
 
 
         let data = {
-            courseId: courseId,
+            course: courses.find(c => c.id === courseId),
             startDate: d,
             endDate: f,
             repeatPeriodInDays: repeatPeriod,

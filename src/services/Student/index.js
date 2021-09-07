@@ -64,7 +64,14 @@ export const getParentById = (id) => {
 // }
 
 export const getScheduleByDate = (gradeMin, gradeMax, start, end, page, size, sortName, sortType) => {
-    return axios.get(`${routes.SCHEDULE}?gradeMin=${gradeMin}&gradeMax=${gradeMax}&startDate=${start}&endDate=${end}&page=${page}&size=${size}&sort=${sortName},${sortType ? sortType : 'asc'}`)
+
+    let grades = "";
+
+    for (let index = gradeMin; index <= gradeMax; index++) {
+        grades = grades + "&grade="+index
+    }
+
+    return axios.get(`${routes.SCHEDULE}?&startDate=${start}${grades}&endDate=${end}&page=${page}&size=${size}&sort=${sortName},${sortType ? sortType : 'asc'}`)
         .then(res => {
             return res.data;
         })
@@ -83,14 +90,20 @@ export const getSchedules = (page, size, sortName, sortType) => {
         })
 }
 
-export const getSchedule = (min = 0, max = 100) => {
+export const getSchedule = (min = 0, max = 20) => {
     let page = 0;
     let size = 10000;
     let filter = 'startDate';
     let sort = 'asc';
     max = max === -1 ? min : max;
-    // let tenant = JSON.parse(localStorage.getItem("tenant"+JSON.parse(localStorage.getItem("user")).id));
-    return axios.get(`${routes.SCHEDULE}?gradeMin=${min}&gradeMax=${max}&page=${page}&size=${size}&sort=${filter},${sort}`)
+
+    let grades = "";
+
+    for (let index = min; index <= max; index++) {
+        grades = grades + "&grade="+index
+    }
+
+    return axios.get(`${routes.SCHEDULE}?page=${page}${grades}&size=${size}&sort=${filter},${sort}`)
         .then(res => {
             return res.data;
         })
@@ -175,7 +188,12 @@ export const findParentProfileByEmail = (email, page, size, sortName, sortType) 
 }
 
 export const findScheduleByGrade = (gradeMin, gradeMax, start, end, page, size, sortName, sortType) => {
-    return axios.get(`${routes.SCHEDULE}?gradeMin=${gradeMin}&gradeMax=${gradeMax}&startDate=${start}&endDate=${end}&page=${page}&size=${size}&sort=${sortName},${sortType ? sortType : 'asc'}`)
+    let grades = "";
+
+    for (let index = gradeMin; index <= gradeMax; index++) {
+        grades = grades + "&grade="+index
+    }
+    return axios.get(`${routes.SCHEDULE}?startDate=${start}${grades}&endDate=${end}&page=${page}&size=${size}&sort=${sortName},${sortType ? sortType : 'asc'}`)
         .then(res => {
             return res.data;
         })

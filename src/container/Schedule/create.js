@@ -71,13 +71,11 @@ function CreateSchedule() {
         let f = (fdate.getMonth() + 1).toString().padStart(2, '0') + '/' + fdate.getDate().toString().padStart(2, '0') + '/' + fdate.getFullYear() + ' ' + fdate.getHours().toString().padStart(2, '0') + ':' + fdate.getMinutes().toString().padStart(2, '0') + ':00 -0500';
 
         let data = {
-            courseId: courseId,
+            course: courses.find(c => c.id === courseId),
             startDate: d,
             endDate: f,
             repeatPeriodInDays: repeatPeriod,
         }
-
-        console.log(data)
 
         createSchedule([data]).then(result => {
             history.push(`/schedules`)
