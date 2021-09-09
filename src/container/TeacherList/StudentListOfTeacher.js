@@ -36,7 +36,7 @@ function StudentListOfTeacher(props) {
     const [open, setOpen] = useState(false);
     const [present, setPresent] = useState(true);
     const [profileLoading, setProfileLoading] = useState(true)
-    const [startDate] = useState('');
+    const [startDate, setStartDate] = useState('');
     const [effectiveStartDate, setEffectiveStartDate] = useState('');
     const [selectedRow, setSelectedRow] = useState([]);
     const assignStudentList = useSelector((state) => {
@@ -209,8 +209,8 @@ function StudentListOfTeacher(props) {
                             style={{ backgroundColor: "transparent", border: "0px", cursor: 'pointer', width: "60%" }}
                             onClick={(e) => {
                                 e.stopPropagation();
-                                history.push(`/studentprofiles/${record.id}/details`, { student: record })
-                                // history.push(`/studentlist/studentDetail/${record.id}`)
+                                // history.push(`/studentprofiles/${record.id}/details`, { student: record })
+                                history.push(`/studentlist/studentDetail/${record.id}`, { student: record })
                             }}>
                             <p style={{ width: "50%", textAlign: "left" }}>
                                 {(record.firstName + " " + record.lastName).length <= 20 ?
@@ -442,14 +442,14 @@ function StudentListOfTeacher(props) {
             })
             studentIdArray.map(studentId => {
                 assignStudentToAnotherTeacher(params.id, studentId)
-                .then(res => {
-                    window.location.reload();
-                });
+                    .then(res => {
+                        window.location.reload();
+                    });
                 return null
             })
 
             dispatch(assignStudents([]));
-            
+
         } else {
             let studentIdArray = [];
             selectedRow.map((student) => {
@@ -458,9 +458,9 @@ function StudentListOfTeacher(props) {
             })
             studentIdArray.map(studentId => {
                 unAssignStudentToAnotherTeacher(params.id, studentId)
-                .then(res => {
-                    window.location.reload();
-                });
+                    .then(res => {
+                        window.location.reload();
+                    });
                 return null
             })
             dispatch(assignStudents([]));
@@ -563,7 +563,7 @@ function StudentListOfTeacher(props) {
                                 assignStudent()
                             }}
                         >
-                            { active ? 'ASSIGN STUDENTS' : 'UNASSIGN STUDENTS' }
+                            {active ? 'ASSIGN STUDENTS' : 'UNASSIGN STUDENTS'}
                         </Button>
                     </div>
                 ]}
@@ -584,7 +584,7 @@ function StudentListOfTeacher(props) {
                                 <h4 >Email</h4>
                             </Col>
                             <Col className="gutter-row" span={14}>
-                                <h4>{`${teacher.teacherProfile.email}`}</h4>
+                                <h4>{`${teacher.teacherProfile.email ? teacher.teacherProfile.email : ''}`}</h4>
                             </Col>
                         </Row>
                         {/* <Row gutter={16}>
@@ -631,7 +631,9 @@ function StudentListOfTeacher(props) {
                             </Col>
                             <Col className="gutter-row" span={14}>
                                 <h4>
-                                    {startDate}
+                                    <Moment local format="D MMM YYYY HH:MM" withTitle>
+                                        {teacher.schedule.startDate}
+                                    </Moment>
                                 </h4>
                             </Col>
                         </Row>
@@ -641,7 +643,9 @@ function StudentListOfTeacher(props) {
                             </Col>
                             <Col className="gutter-row" span={14}>
                                 <h4>
-                                    {effectiveStartDate}
+                                    <Moment local format="D MMM YYYY HH:MM" withTitle>
+                                        {teacher.schedule.startDate}
+                                    </Moment>
                                 </h4>
                             </Col>
                         </Row>

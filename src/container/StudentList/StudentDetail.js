@@ -20,6 +20,7 @@ function StudentDetail(props) {
     const [studentDetail, setStudentDetail] = useState(location.state.student);
 
     useEffect(() => {
+        console.log(location.state.student);
         getComments();
         getAllCourses();
         getAvailability();
@@ -33,16 +34,18 @@ function StudentDetail(props) {
                     tmpStudent.teacherAvailability.teacherProfile = teacher;
                     setStudentDetail(tmpStudent);
                 }
+            });
+
+            getScheduleById(studentDetail.teacherAvailability.schedule.id).then(schedule => {
+                if (schedule) {
+                    let tmpStudent = studentDetail;
+                    tmpStudent.schedule = schedule;
+                    setStudentDetail(tmpStudent);
+                }
             })
         }
 
-        getScheduleById(studentDetail.schedule.id).then(schedule => {
-            if (schedule) {
-                let tmpStudent = studentDetail;
-                tmpStudent.schedule = schedule;
-                setStudentDetail(tmpStudent);
-            }
-        })
+        
     }, [loading]);
 
     const getAllCourses = () => {
@@ -153,7 +156,7 @@ function StudentDetail(props) {
                                 <Col className="gutter-row" span={14}>
                                     <h4 >
                                         <Moment local format="D MMM YYYY HH:MM" withTitle>
-                                            {studentDetail.schedule.startDate}
+                                            {studentDetail.teacherAvailability ? studentDetail.teacherAvailability.schedule ? studentDetail.teacherAvailability.schedule.startDate : '' : ''}
                                         </Moment>
                                     </h4>
                                 </Col>
@@ -163,7 +166,7 @@ function StudentDetail(props) {
                                     <h4 >Subject</h4>
                                 </Col>
                                 <Col className="gutter-row" span={14}>
-                                    <h4 >{studentDetail.schedule.courseId ? courses.find(c => c.id === studentDetail.schedule.courseId) ? courses.find(c => c.id === studentDetail.schedule.courseId).name : '' : ''}</h4>
+                                    <h4 >{studentDetail.teacherAvailability ? studentDetail.teacherAvailability.schedule ? studentDetail.teacherAvailability.schedule.course  ? studentDetail.teacherAvailability.schedule.course.name : '' : '' : ''}</h4>
                                 </Col>
                             </Row>
                             <Row gutter={16}>
