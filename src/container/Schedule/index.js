@@ -88,7 +88,7 @@ function Schedule() {
                 };
             },
             render: (record) => {
-                let course = courses.find(c => record.courseId === c.id);
+                let course = record.course;
                 return (
                     <div>
                         {course ? course.subject ? course.subject.name : '' : ''}
@@ -160,10 +160,10 @@ function Schedule() {
             title: 'Duration',
             key: 'durationInMinutes',
             render: (record) => {
-                let course = courses.find(c => record.courseId === c.id);
+                let course = record.course;
                 return (
                     <div>
-                        {course ? course.durationInMinutes+' min' : ''}
+                        {course ? course.durationInMinutes ? course.durationInMinutes+' min' : '' : ''}
                     </div>
                 )
             }
@@ -172,7 +172,7 @@ function Schedule() {
             title: 'Grades',
             key: 'grades',
             render: (record) => {
-                let course = courses.find(c => record.courseId === c.id);
+                let course = record.course;
                 return (
                     <div>
                         {gradesToPrint(course)}
