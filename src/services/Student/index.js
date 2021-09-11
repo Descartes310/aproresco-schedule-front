@@ -157,6 +157,16 @@ export const getStudentDetail = (studentId) => {
         })
 }
 
+export const getStudentProfileById = (studentId) => {
+    return axios.get(`${routes.STUDENT}/${studentId}`)
+        .then(res => {
+            return res.data;
+        })
+        .catch(err => {
+            //alert(err.message);
+        })
+}
+
 export const getBookings = (studentId) => {
     return axios.get(`${routes.BOOKING}/${studentId}`)
         .then(res => {

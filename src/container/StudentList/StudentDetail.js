@@ -4,7 +4,7 @@ import { CheckOutlined } from '@ant-design/icons';
 import { Row, Col, PageHeader, Button, Card } from 'antd';
 import { useLocation, useHistory } from "react-router-dom";
 import React, { useState, useEffect } from 'react';
-import { assignStudentToAnotherTeacher, getStudentDetail, getBookingAvailability } from '../../services/Student';
+import { assignStudentToAnotherTeacher, getStudentDetail, getBookingAvailability, getStudentProfileById, getParentById } from '../../services/Student';
 import { createComment, updateComment, approveComment, getCourses, getTeacherProfileById, getScheduleById, getBookingComments } from '../../services/Teacher';
 
 function StudentDetail(props) {
@@ -16,6 +16,9 @@ function StudentDetail(props) {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [comment, setComment] = useState(null);
+    const [teacher, setTeacher] = useState(null);
+    const [profile, setProfile] = useState(null);
+    const [parent, setParent] = useState(null);
     const [comments, setComments] = useState([]);
     const [studentDetail, setStudentDetail] = useState(location.state.student);
 
@@ -31,9 +34,17 @@ function StudentDetail(props) {
                 if (teacher) {
                     let tmpStudent = studentDetail;
                     tmpStudent.teacherAvailability.teacherProfile = teacher;
+                    setTeacher(teacher)
                     setStudentDetail(tmpStudent);
                 }
             });
+
+            getStudentProfileById(studentDetail.studentProfile.id).then(data => {
+                setProfile(data);
+                getParentById(data.studentParentId).then(parent => {
+                    setParent(parent)
+                });
+            })
 
             getScheduleById(studentDetail.teacherAvailability.schedule.id).then(schedule => {
                 if (schedule) {
@@ -188,7 +199,7 @@ function StudentDetail(props) {
                                     <h4>Parent Email</h4>
                                 </Col>
                                 <Col className="gutter-row" span={14}>
-                                    <h4 >{studentDetail.studentProfile.parent ? studentDetail.studentProfile.parent.email : studentDetail.parent ? studentDetail.parent.email : ''}</h4>
+                                    <h4 >{parent ? parent.email : ''}</h4>
                                 </Col>
                             </Row>
                             <Row gutter={16}>
@@ -204,7 +215,7 @@ function StudentDetail(props) {
                                     <h4 >Student URL</h4>
                                 </Col>
                                 <Col className="gutter-row" span={14}>
-                                    <h4 onClick={() => window.open(studentDetail.studentProfile.conferenceUrl.includes('http') ? studentDetail.studentProfile.conferenceUrl : 'http://' + studentDetail.studentProfile.conferenceUrl)}>{studentDetail.studentProfile.conferenceUrl}</h4>
+                                    <h4 onClick={() => window.open(profile ? profile.conferenceUrl.includes('http') ? profile.conferenceUrl : 'http://' + profile.conferenceUrl : '')}>{profile ? profile.conferenceUrl : ''}</h4>
                                 </Col>
                             </Row>
                             <Row gutter={16}>
@@ -212,7 +223,7 @@ function StudentDetail(props) {
                                     <h4>Phone</h4>
                                 </Col>
                                 <Col className="gutter-row" span={14}>
-                                    <h4 >{studentDetail.studentProfile.parent ? studentDetail.studentProfile.parent.phoneNumber : studentDetail.parent ? studentDetail.parent.phoneNumber : ''}</h4>
+                                    <h4 >{parent ? parent.phoneNumber : ''}</h4>
                                 </Col>
                             </Row>
 
@@ -273,7 +284,7 @@ function StudentDetail(props) {
                                     <h4>Subjects</h4>
                                 </Col>
                                 <Col className="gutter-row" span={14}>
-                                    <h4 >{studentDetail.teacherAvailability ? studentDetail.teacherAvailability.teacherProfile ? studentDetail.teacherAvailability.teacherProfile.subjects ? studentDetail.teacherAvailability.teacherProfile.subjects.map(s => s.name).join(', ') : '' : '' : ''}</h4>
+                                    <h4 >{teacher ? teacher.subjects ? teacher.subjects.map(s => s.name).join(', ') : '' : ''}</h4>
                                 </Col>
                             </Row>
                             <Row gutter={16} style={{ display: studentDetail.teacherAvailability ? studentDetail.teacherAvailability.teacherProfile ? 'flex' : 'none' : 'none' }}>
@@ -281,7 +292,7 @@ function StudentDetail(props) {
                                     <h4 >Grades</h4>
                                 </Col>
                                 <Col className="gutter-row" span={14}>
-                                    <h4 >{studentDetail.teacherAvailability ? studentDetail.teacherAvailability.teacherProfile ? studentDetail.teacherAvailability.teacherProfile.grades ? studentDetail.teacherAvailability.teacherProfile.grades.join(', ') : '' : '' : ''}</h4>
+                                    <h4 >{teacher ? teacher.grades ? teacher.grades.join(', ') : '' : ''}</h4>
                                 </Col>
                             </Row>
                             <Row gutter={16} style={{ display: studentDetail.teacherAvailability ? studentDetail.teacherAvailability.teacherProfile ? 'flex' : 'none' : 'none' }}>
