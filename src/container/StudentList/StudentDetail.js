@@ -20,7 +20,6 @@ function StudentDetail(props) {
     const [studentDetail, setStudentDetail] = useState(location.state.student);
 
     useEffect(() => {
-        console.log(location.state.student);
         getComments();
         getAllCourses();
         getAvailability();

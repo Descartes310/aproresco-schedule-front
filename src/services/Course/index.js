@@ -14,7 +14,13 @@ export const updateSubject = (id, data) => {
 }
 
 export const getCourses = (page = 0, size = 1000, sortName = "subject", sortType = "asc", name = '', gradeMin = 0, gradeMax = 30) => {
-    return axios.get(`${routes.COURSE}?page=${page}&size=${size}&subject=${name}gradeMin=${gradeMin}&gradeMax=${gradeMax}&sort=${sortName},${sortType ? sortType : 'asc'}`)
+
+    let grades = "";
+    
+    for (let index = gradeMin; index <= gradeMax; index++) {
+        grades = grades + "&grade="+index
+    }
+    return axios.get(`${routes.COURSE}?page=${page}&size=${size}&subject=${name}${grades}&sort=${sortName},${sortType ? sortType : 'asc'}`)
         .then(res => {
             return res.data;
         })
