@@ -182,17 +182,8 @@ function StudentList() {
                 </div>,
             key: 'name',
             fixed: 'left',
-        }, {
-            title: <div>Parent Email</div>,
-            render: (record) => {
-                let parent = parents.find(p => p.id === record.studentProfile.studentParentId);
-                record.parent = parent;
-                return (
-                    <span>{parent ? parent.email : ''}</span>
-                )
-            },
-            key: 'parentEmail',
-        }, {
+        },
+        {
             title: <div><span>Start Date </span>
                 {sortingName === "startDate" && sortingType === "asc" && <VerticalAlignBottomOutlined />}
                 {sortingName === "startDate" && sortingType === "desc" && <VerticalAlignTopOutlined />}
@@ -209,15 +200,35 @@ function StudentList() {
                 };
             },
             render: (record) => (
-                <div>
+                <span>
                     {
-                        <Moment local format="D MMM YYYY HH:MM" withTitle>
+                        <Moment local format="D/MM/YYYY" withTitle>
                             {record.schedule.startDate}
                         </Moment>
                     }
-                </div>
+                </span>
             ),
             key: 'startDate',
+        }, {
+            title: <div>Parent Email</div>,
+            onHeaderCell: (column) => {
+                return {
+                    onClick: () => {
+                        setSortingName("parentEmail");
+                        if (sortingType === "") { setSortingType("asc") }
+                        else if (sortingType === "asc") { setSortingType("desc") }
+                        else if (sortingType === "desc") { setSortingType("asc"); setSortingName("parentEmail"); }
+                    }
+                };
+            },
+            render: (record) => {
+                let parent = parents.find(p => p.id === record.studentProfile.studentParentId);
+                record.parent = parent;
+                return (
+                    <span>{parent ? parent.email : ''}</span>
+                )
+            },
+            key: 'parentEmail',
         },
         {
             title: <div><span>Subject </span>
@@ -351,7 +362,7 @@ function StudentList() {
                                         if (record.teacherAvailability.teacherProfile)
                                             history.push(`/studentlist/teacher/${record.teacherAvailability.id}`, { teacher: record.teacherAvailability })
                                 }} style={{ cursor: 'pointer', color: isSubjectContains ? 'black' : 'orange' }}>
-                                    {record.teacherAvailability ? record.teacherAvailability.teacherProfile ? record.teacherAvailability.teacherProfile.firstName + " " + record.teacherAvailability.teacherProfile.lastName + " (" + record.teacherAvailability.studentCount + ")" : "No teacher" : "No teacher"}
+                                    {record.teacherAvailability ? record.teacherAvailability.teacherProfile ? record.teacherAvailability.teacherProfile.firstName + " " + record.teacherAvailability.teacherProfile.lastName + " (" + record.teacherAvailability.studentCount + ")" : "" : ""}
                                 </p>
                             </Tooltip>
                         </span> : null

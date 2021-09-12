@@ -1,4 +1,5 @@
 import 'antd/dist/antd.css';
+import Moment from 'react-moment';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import '../../Assets/container/StudentList.css';
@@ -97,6 +98,15 @@ function ShortMessageList(props) {
                     }
                 };
             },
+            render: (record) => (
+                <div>
+                    {
+                        <Moment local format="D/MM/YYYY HH:mm:SS" withTitle>
+                            {record.createDate}
+                        </Moment>
+                    }
+                </div>
+            ),
             dataIndex: 'createDate',
             key: 'createDate',
         }

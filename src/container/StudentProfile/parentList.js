@@ -114,7 +114,7 @@ function ParentProfile() {
             render: (record) => (
                 <div>
                     {
-                        <Moment local format="D MMM YYYY HH:MM" withTitle>
+                        <Moment local format="D/MM/YYYY" withTitle>
                             {record.activationDate}
                         </Moment>
                     }

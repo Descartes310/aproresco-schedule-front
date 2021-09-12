@@ -2,7 +2,7 @@ import 'antd/dist/antd.css';
 import { useHistory } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 import { getCourses } from '../../services/Course';
-import { Table, PageHeader, Button, Spin } from 'antd';
+import { Table, PageHeader, Button, Spin, Tooltip } from 'antd';
 import SearchFilter from '../../components/Tag/SearchFilter';
 import { VerticalAlignBottomOutlined, VerticalAlignTopOutlined, PlusOutlined } from "@ant-design/icons";
 
@@ -81,32 +81,29 @@ export default function SubjectsList() {
             fixed: 'left',
         },
         {
-            title: <div><span>Create Date </span></div>,
+            title: <div><span>Grades </span>
+            </div>,
+            key: 'grades',
             render: (record) => {
-                let s = record.createDate;
-                let date = (new Date(s)).toLocaleDateString();
-                let sTime = ((new Date(s)).toLocaleTimeString()).split(':');
-
-                let sst = sTime[0] + ':' + sTime[1];
-
                 return (
-                    <span>
-                        {date + " " + sst}
-                    </span>
+                    <div>
+                        {gradesToPrint(record)}
+                    </div>
                 )
-            },
-            key: 'createDate',
+            }
+        },
+        {
+            title: <div><span>Subjects </span>
+            </div>,
+            key: 'subjects',
+            render: (record) => {
+                return (
+                    <div>
+                        {record.subject ? record.subject.name : ''}
+                    </div>
+                )
+            }
         }
-        // {
-        //     title: <div><span>Action </span>
-        //     </div>,
-        //     render: (record) => {
-        //         return (
-        //             <div id="edit" onClick={(e) => { e.stopPropagation(); history.push(`/subjects/${record.id}/update`, { subject: record }) }}><EditOutlined id="editIcon" style={{ fontSize: 20, marginLeft: 10, color: '#1890FF' }} /></div>
-        //         )
-        //     },
-        //     key: 'action',
-        // }
     ]
 
     const handleTableChange = (pagination) => {
@@ -154,6 +151,38 @@ export default function SubjectsList() {
         const { name, value } = e.target;
         setSearch({ ...search, [name]: value });
         getListView(value);
+    }
+
+    const gradesToPrint = (profile) => {
+        let i = 0;
+        let result = '';
+        if (profile == null) {
+            return '';
+        }
+
+        if (!profile.grades) {
+            return '';
+        }
+
+        for (i = 0; i < profile.grades.length; i++) {
+            if (i === 0) {
+                result += profile.grades[i];
+            } else {
+                if (i === (profile.grades.length - 1))
+                    if (Number(profile.grades[i - 1]) !== Number(profile.grades[i]) - 1)
+                        result = result + ', ' + profile.grades[i];
+                    else
+                        result = result + '-' + profile.grades[i];
+                else
+                    if (Number(profile.grades[i - 1]) !== Number(profile.grades[i]) - 1)
+                        if (Number(profile.grades[i]) !== Number(profile.grades[i + 1]) - 1)
+                            result = result + ',' + profile.grades[i] + ', ' + profile.grades[i + 1];
+                        else
+                            result = result + ',' + profile.grades[i];
+            }
+        }
+
+        return result;
     }
 
     return (

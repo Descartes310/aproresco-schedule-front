@@ -2,7 +2,8 @@ import 'antd/dist/antd.css';
 import Modal from 'react-modal';
 import { useHistory } from 'react-router-dom'
 import React, { useEffect, useState } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { formatDate } from '../../components/helpers';
+import { useSelector, useDispatch } from 'react-redux';
 import { faCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { assignStudents } from '../../Action-Reducer/Student/action'
@@ -343,12 +344,9 @@ function TeacherList() {
             },
             render: (record) => {
                 let tmp = new Date(record.schedule ? record.schedule.startDate : null);
-                let result = new Date(tmp.getFullYear(), tmp.getMonth(), tmp.getDate());
-
-                let startD = (result.getMonth() + 1).toString().padStart(2, '0') + '/' + result.getDate().toString().padStart(2, '0') + '/' + result.getFullYear();
                 return (
                     <span>
-                        {startD}
+                        {formatDate(new Date(tmp.getFullYear(), tmp.getMonth(), tmp.getDate()))}
                     </span>
                 )
             },

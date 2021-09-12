@@ -372,6 +372,20 @@ function CreateBooking() {
                     onFinish={handleSubmit}
                     layout="vertical"
                 >
+
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'flex-end'
+                    }}>
+                        <Form.Item>
+                            <Button onClick={() => handleSubmit} disabled={submitting} type="primary" size="large" htmlType="submit">
+                                {
+                                    submitting ? 'Loading...' : 'Create a Student booking'
+                                }
+                            </Button>
+                        </Form.Item>
+                    </div>
                     <div style={{
                         display: 'flex',
                         flexDirection: 'row'
@@ -466,14 +480,6 @@ function CreateBooking() {
                             rowSelection={rowSelection}
                             rowKey="id"
                         />}
-
-                    <Form.Item>
-                        <Button onClick={() => handleSubmit} disabled={submitting} type="primary" size="large" htmlType="submit">
-                            {
-                                submitting ? 'Loading...' : 'Create a Student booking'
-                            }
-                        </Button>
-                    </Form.Item>
                 </Form>
             </PageHeader>
         </div>
