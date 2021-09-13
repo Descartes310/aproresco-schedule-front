@@ -1,4 +1,5 @@
 import 'antd/dist/antd.css';
+import Moment from 'react-moment';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import '../../Assets/container/StudentList.css';
@@ -114,15 +115,11 @@ function Schedule() {
                 };
             },
             render: (record) => {
-                let s = record.startDate;
-                let date = (new Date(s)).toLocaleDateString();
-                let sTime = ((new Date(s)).toLocaleTimeString()).split(':');
-
-                let sst = sTime[0] + ':' + sTime[1];
-
                 return (
                     <span>
-                        {date + " " + sst}
+                        <Moment local format="D/MM/YYYY hh:mm" withTitle>
+                            {record.startDate}
+                        </Moment>
                     </span>
                 )
             },

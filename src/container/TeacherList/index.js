@@ -1,5 +1,6 @@
 import 'antd/dist/antd.css';
 import Modal from 'react-modal';
+import Moment from 'react-moment';
 import { useHistory } from 'react-router-dom'
 import React, { useEffect, useState } from 'react'
 import { formatDate } from '../../components/helpers';
@@ -343,10 +344,12 @@ function TeacherList() {
                 };
             },
             render: (record) => {
-                let tmp = new Date(record.schedule ? record.schedule.startDate : null);
                 return (
                     <span>
-                        {formatDate(new Date(tmp.getFullYear(), tmp.getMonth(), tmp.getDate()))}
+
+                        <Moment local format="D/MM/YYYY hh:mm" withTitle>
+                            {record.schedule ? record.schedule.startDate : new Date(null)}
+                        </Moment>
                     </span>
                 )
             },
@@ -519,10 +522,10 @@ function TeacherList() {
                     })
                     studentIdArray.map(studentId => {
                         assignStudentToAnotherTeacher(record.id, studentId)
-                        .then(res => {
-                            setStudentList(null);
-                            getListView();
-                        });
+                            .then(res => {
+                                setStudentList(null);
+                                getListView();
+                            });
                         return null;
                     })
                     dispatch(assignStudents([]));
@@ -642,10 +645,10 @@ function TeacherList() {
         })
         studentIdArray.map(studentId => {
             assignStudentToAnotherTeacher(teacherId.id, studentId)
-            .then(res => {
-                closeModal();
-                getListView();
-            });
+                .then(res => {
+                    closeModal();
+                    getListView();
+                });
             return null;
         })
     }
