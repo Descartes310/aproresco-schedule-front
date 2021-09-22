@@ -36,8 +36,6 @@ function CreateAvailibility() {
         setDates([]);
         setDat(null);
         let _children = studentList.filter(c => c.id === id)[0];
-        console.log(_children)
-        console.log(courses)
         setChildren(_children);
         getSchedule(1).then(data => {
             setSchedules(data.content);

@@ -15,8 +15,10 @@ function CreateSchedule() {
     const [open, setOpen] = useState(false);
     const [grade, setGrade] = useState(null);
     const [endDate, setEndDate] = useState('');
+    const [endTime, setEndTime] = useState('');
     const [courses, setCourses] = useState([]);
     const [course, setCourse] = useState(null);
+    const [startTime, setStartTime] = useState('');
     const [loading, setLoading] = useState(false);
     const [courseId, setCourseId] = useState(null);
     const [startDate, setStartDate] = useState('');
@@ -66,14 +68,14 @@ function CreateSchedule() {
         setSubmitting(true)
 
         let date = new Date(startDate);
-        let d = (date.getMonth() + 1).toString().padStart(2, '0') + '/' + date.getDate().toString().padStart(2, '0') + '/' + date.getFullYear() + ' ' + date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0') + ':00 -0500';
+        let d = (date.getMonth() + 1).toString().padStart(2, '0') + '/' + date.getDate().toString().padStart(2, '0') + '/' + date.getFullYear();
         let fdate = new Date(endDate);
-        let f = (fdate.getMonth() + 1).toString().padStart(2, '0') + '/' + fdate.getDate().toString().padStart(2, '0') + '/' + fdate.getFullYear() + ' ' + fdate.getHours().toString().padStart(2, '0') + ':' + fdate.getMinutes().toString().padStart(2, '0') + ':00 -0500';
+        let f = (fdate.getMonth() + 1).toString().padStart(2, '0') + '/' + fdate.getDate().toString().padStart(2, '0') + '/' + fdate.getFullYear();
 
         let data = {
             course: courses.find(c => c.id === courseId),
-            startDate: d,
-            endDate: f,
+            startDate: d+' '+startTime+':00 -0500',
+            endDate: f+' '+endTime+':00 -0500',
             repeatPeriodInDays: repeatPeriod,
         }
 
@@ -179,8 +181,20 @@ function CreateSchedule() {
                         <Form.Item label="Start date" required style={{ flex: 1, marginRight: '10px' }}>
                             <Input type="date" name="startDate" onChange={(e) => setStartDate(e.target.value)} />
                         </Form.Item>
+                        <Form.Item label="Start time" required style={{ flex: 1, marginRight: '10px' }}>
+                            <Input type="time" name="startTime" onChange={(e) => setStartTime(e.target.value)} />
+                        </Form.Item>
+                    </div>
+
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'row'
+                    }}>
                         <Form.Item label="End date" required style={{ flex: 1, marginRight: '10px' }}>
                             <Input type="date" name="endDate" onChange={(e) => setEndDate(e.target.value)} />
+                        </Form.Item>
+                        <Form.Item label="End time" required style={{ flex: 1, marginRight: '10px' }}>
+                            <Input type="time" name="endTime" onChange={(e) => setEndTime(e.target.value)} />
                         </Form.Item>
                     </div>
 

@@ -154,7 +154,6 @@ function StudentListOfTeacher(props) {
         return result;
     }
 
-
     const [supervisor, setSupervisor] = useState(getRole('supervisor'));
     const [admin, setAdmin] = useState(getRole('admin'));
     const [approved, setApproved] = useState(getApproved());
@@ -632,7 +631,7 @@ function StudentListOfTeacher(props) {
                             <Col className="gutter-row" span={14}>
                                 <h4>
                                     <Moment local format="D MMM YYYY HH:MM" withTitle>
-                                        {teacher.schedule.startDate}
+                                        {teacher.schedule && teacher.schedule.startDate}
                                     </Moment>
                                 </h4>
                             </Col>
@@ -644,7 +643,7 @@ function StudentListOfTeacher(props) {
                             <Col className="gutter-row" span={14}>
                                 <h4>
                                     <Moment local format="D MMM YYYY HH:MM" withTitle>
-                                        {teacher.schedule.startDate}
+                                        {teacher.schedule && teacher.schedule.startDate}
                                     </Moment>
                                 </h4>
                             </Col>
