@@ -24,10 +24,37 @@ function LayoutOfApp({ children }, props) {
   const history = useHistory();
   const [pathName, setPathName] = useState(window.location.pathname);
   const [logged, setLogged] = useState(true);
-  const [key, setKey] = useState('1');
-  const [openKeys, setOpenKeys] = React.useState(['teachers']);
+  const [key, setKey] = useState(null);
+  const [openKeys, setOpenKeys] = React.useState([]);
+
+  const getParent = (key) => {
+    if(['teacherlist', 'teacherprofiles', 'short-messages'].includes(key)) {
+      setOpenKeys(['teachers']);
+      return;
+    }
+    if(['studentlist', 'studentprofiles', 'parentProfiles', 'short-messages'].includes(key)) {
+      setOpenKeys(['students']);
+      return;
+    }
+    setOpenKeys([]);
+  }
 
   useEffect(() => {
+
+    if (!key) {
+      if (pathName.split('/').length <= 0) {
+        setKey('teacherlist');
+        getParent('teacherlist');
+      } else {
+        if (pathName.split('/')[0].trim() == '') {
+          setKey(pathName.split('/')[1]);
+          getParent(pathName.split('/')[1]);
+        } else {
+          setKey(pathName.split('/')[0]);
+          getParent(pathName.split('/')[0]);
+        }
+      }
+    }
 
     try {
       if (!logged) {
@@ -149,15 +176,15 @@ function LayoutOfApp({ children }, props) {
             <h1>Appui Scolaire</h1>
             <Menu theme="dark" onClick={handleClick} selectedKeys={[key]} openKeys={openKeys} onOpenChange={onOpenChange} mode="inline">
               <SubMenu key="teachers" icon={<BookOutlined />} title="Teachers">
-                <Menu.Item key="1" onClick={() => { history.push('/teacherlist') }}>Availabilities</Menu.Item>
-                <Menu.Item key="2" onClick={() => { history.push('/teacherprofiles') }}>Profiles</Menu.Item>
-                <Menu.Item key="3" onClick={() => { history.push('/short-messages/teacher') }}>Messages</Menu.Item>
+                <Menu.Item key="teacherlist" onClick={() => { history.push('/teacherlist') }}>Availabilities</Menu.Item>
+                <Menu.Item key="teacherprofiles" onClick={() => { history.push('/teacherprofiles') }}>Profiles</Menu.Item>
+                <Menu.Item key="short-messages" onClick={() => { history.push('/short-messages/teacher') }}>Messages</Menu.Item>
               </SubMenu>
               <SubMenu key="students" icon={<UserOutlined />} title="Students">
-                <Menu.Item key="5" onClick={() => { history.push('/studentlist') }}>Bookings</Menu.Item>
-                <Menu.Item key="4" onClick={() => { history.push('/studentprofiles') }}>Profiles</Menu.Item>
-                <Menu.Item key="6" onClick={() => { history.push('/short-messages/parent') }}>Messages</Menu.Item>
-                <Menu.Item key="7" onClick={() => { history.push('/parentProfiles') }}>Parents</Menu.Item>
+                <Menu.Item key="studentlist" onClick={() => { history.push('/studentlist') }}>Bookings</Menu.Item>
+                <Menu.Item key="studentprofiles" onClick={() => { history.push('/studentprofiles') }}>Profiles</Menu.Item>
+                <Menu.Item key="short-messages" onClick={() => { history.push('/short-messages/parent') }}>Messages</Menu.Item>
+                <Menu.Item key="parentProfiles" onClick={() => { history.push('/parentProfiles') }}>Parents</Menu.Item>
               </SubMenu>
               <Menu.Item key="schedules" icon={<CalendarOutlined />} onClick={() => { history.push('/schedules') }}>
                 Schedules

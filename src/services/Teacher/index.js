@@ -278,6 +278,16 @@ export const getTeacherProfileById = (id) => {
         })
 }
 
+export const getTeacherAvailabilityById = (id) => {
+    return axios.get(`${routes.AVAILABILITY}/${id}`)
+        .then(res => {
+            return res.data;
+        })
+        .catch(err => {
+            //alert(err.message);
+        })
+}
+
 export const findTeacherListByFirstNameAndLastName = (firstName, start, end, page, size, tag, sortName, sortType) => {
     return axios.get(`${routes.AVAILABILITY}?firstName=${firstName}&startDate=${start}&endDate=${end}&page=${page}&size=${size}&tag=${tag}&sort=${sortName},${sortType ? sortType : 'asc'}`, {
         headers: {

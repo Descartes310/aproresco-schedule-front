@@ -13,15 +13,15 @@ import { assignStudents } from '../../Action-Reducer/Student/action';
 import { Table, PageHeader, Button, Spin, Tooltip } from 'antd';
 import { faCrown, faShieldAlt, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 import { assignStudentToAnotherTeacher, assignMeetingToAnotherTeacher, findTeacherProfileByFirstNameAndLastName, unAssignStudentToAnotherTeacher } from '../../services/Student';
-import { markTeacherAsPresent, markAsSupervisor, markAsAdmin, markAsApproved, updateAvailabilityAssistants, getSubjectById, getAvailabilityBookings, removeAvailabilityAssistants } from '../../services/Teacher';
+import { markTeacherAsPresent, markAsSupervisor, getTeacherProfileById, getTeacherAvailabilityById, markAsAdmin, markAsApproved, updateAvailabilityAssistants, getSubjectById, getAvailabilityBookings, removeAvailabilityAssistants } from '../../services/Teacher';
 
 function StudentListOfTeacher(props) {
 
     const dispatch = useDispatch();
     const location = useLocation();
-    const [teacher, setTeacher] = useState(location.state.teacher);
+    const [teacher, setTeacher] = useState(null);
     const [profile] = useState(location.state.profile);
-    const [teacherProfile] = useState(location.state.teacherProfile);
+    const [teacherProfile, setTeacherProfile] = useState(null);
     const { params } = props.match;
     const [studentList, setStudentList] = useState();
     const [confUrl, setConfUrl] = useState();
@@ -56,6 +56,40 @@ function StudentListOfTeacher(props) {
         lastName: "",
     })
 
+    const getTeacherById = (id) => {
+        getTeacherProfileById(id).then(data => {
+            setTeacherProfile(data);
+        });
+    }
+
+    useEffect(() => {
+        getAvailabilityById();
+    }, [])
+
+    useEffect(() => {
+        if (teacherProfile) {
+            setAssistants(teacher.assistants ? teacher.assistants : []);
+            let sd = teacher.createDate;
+            let date = (new Date(sd)).toLocaleDateString();
+            teacherProfile.subjects.map(s => {
+                getSubject(s.id);
+                return null;
+            })
+            setPresent(teacher.effectiveStartDate ? false : true);
+            //setEffectiveStartDate(teacher.effectiveStartDate);
+            setEffectiveStartDate(date);
+            getListView();
+            getListProfiles();
+        }
+    }, [teacherProfile])
+
+    const getAvailabilityById = () => {
+        setTeacher(location.state.teacher);
+        // getTeacherAvailabilityById(props.match.params.id).then(data => {
+            // setTeacher(data);
+        getTeacherById(location.state.teacher.teacherProfile.id);
+        // });
+    }
 
     const getRole = (role) => {
         let result = false;
@@ -108,7 +142,7 @@ function StudentListOfTeacher(props) {
 
     useEffect(() => {
         searchList()
-    }, [search])
+    }, [search]);
 
     const searchList = () => {
         getListProfiles();
@@ -174,21 +208,6 @@ function StudentListOfTeacher(props) {
             setSelectedRow(recordIdArray);
         }
     };
-
-    useEffect(() => {
-        setAssistants(teacher.assistants ? teacher.assistants : []);
-        let sd = teacher.createDate;
-        let date = (new Date(sd)).toLocaleDateString();
-        teacherProfile.subjects.map(s => {
-            getSubject(s.id);
-            return null;
-        })
-        setPresent(teacher.effectiveStartDate ? false : true);
-        //setEffectiveStartDate(teacher.effectiveStartDate);
-        setEffectiveStartDate(date);
-        getListView();
-        getListProfiles();
-    }, []);
 
     const columns = [
         {
@@ -505,10 +524,6 @@ function StudentListOfTeacher(props) {
         });
     }
 
-    useEffect(() => {
-        console.log(subjects)
-    }, [subjects])
-
     const markTeacherAsSupervisor = () => {
         markAsSupervisor(teacher.teacherProfile.id, !supervisor).then(data => {
             setSupervisor(!supervisor);
@@ -523,70 +538,69 @@ function StudentListOfTeacher(props) {
 
     return (
         <div>
-            {/* {console.log(params)}
-            students history.... {params.id} */}
-            <PageHeader
-                ghost={false}
-                title={
-                    <div style={{ display: "flex", flexDirection: 'row', alignItems: "center", justifyContent: "center" }}>
-                        <p style={{ fontSize: '3em', textAlign: 'center', margin: '20px', marginBottom: '20px' }}>{`${teacher.teacherProfile.firstName} ${teacher.teacherProfile.lastName}`}</p>
-                        <Tooltip title={admin ? "Administrator" : "Not An Administrator"}>
-                            <FontAwesomeIcon onClick={() => markTeacherAsAdmin()} icon={faCrown} color={admin ? "gold" : "gray"} size={"2x"} style={{ marginLeft: 20 }} />
-                        </Tooltip>
-                        <Tooltip title={supervisor ? "Supervisor" : "Not A Supervisor"}>
-                            <FontAwesomeIcon onClick={() => markTeacherAsSupervisor()} icon={faShieldAlt} color={supervisor ? "blue" : "gray"} size={"2x"} style={{ marginLeft: 20 }} />
-                        </Tooltip>
-                        <Tooltip title={approved ? "Approved" : "Not Approved"}>
-                            <FontAwesomeIcon onClick={() => markTeacherAsApproved()} icon={faThumbsUp} color={approved ? "green" : "gray"} size={"2x"} style={{ marginLeft: 20 }} />
-                        </Tooltip>
-                    </div>
-                }
-                extra={[
-                    <div style={{ display: 'flex' }}>
-                        <Button key='1' type="primary"
-                            style={{ display: 'flex' }}
-                            onClick={(e) => { e.stopPropagation(); teacher.schedule ? history.push(`/teacherlist/${teacher.id}/update`, { teacher: teacher }) : history.push(`/teacherprofiles/${teacher.id}/update`, { teacher: { ...teacher, ...teacher.teacherProfile } }) }}
-                        >
-                            Edit
-                        </Button>
-                        <Button key='2' type="primary"
-                            style={{ display: 'none' }}
-                            onClick={() => markAsPresent()}
-                        >
-                            {present ? 'MARK AS PRESENT' : 'MARK AS ABSENT'}
-                        </Button>
-                        <Button key='3' type="primary"
-                            style={{ display: !assigningStatus ? 'block' : 'none', marginLeft: '20px' }}
-                            disabled={(assignStudentList.length > 0 && active) || selectedRow.length > 0 ? false : true}
-                            onClick={() => {
-                                assignStudent()
-                            }}
-                        >
-                            {active ? 'ASSIGN STUDENTS' : 'UNASSIGN STUDENTS'}
-                        </Button>
-                    </div>
-                ]}
-            >
+            {!teacherProfile ? <Spin className="loading-table" /> :
+                <PageHeader
+                    ghost={false}
+                    title={
+                        <div style={{ display: "flex", flexDirection: 'row', alignItems: "center", justifyContent: "center" }}>
+                            <p style={{ fontSize: '3em', textAlign: 'center', margin: '20px', marginBottom: '20px' }}>{`${teacher.teacherProfile.firstName} ${teacher.teacherProfile.lastName}`}</p>
+                            <Tooltip title={admin ? "Administrator" : "Not An Administrator"}>
+                                <FontAwesomeIcon onClick={() => markTeacherAsAdmin()} icon={faCrown} color={admin ? "gold" : "gray"} size={"2x"} style={{ marginLeft: 20 }} />
+                            </Tooltip>
+                            <Tooltip title={supervisor ? "Supervisor" : "Not A Supervisor"}>
+                                <FontAwesomeIcon onClick={() => markTeacherAsSupervisor()} icon={faShieldAlt} color={supervisor ? "blue" : "gray"} size={"2x"} style={{ marginLeft: 20 }} />
+                            </Tooltip>
+                            <Tooltip title={approved ? "Approved" : "Not Approved"}>
+                                <FontAwesomeIcon onClick={() => markTeacherAsApproved()} icon={faThumbsUp} color={approved ? "green" : "gray"} size={"2x"} style={{ marginLeft: 20 }} />
+                            </Tooltip>
+                        </div>
+                    }
+                    extra={[
+                        <div style={{ display: 'flex' }}>
+                            <Button key='1' type="primary"
+                                style={{ display: 'flex' }}
+                                onClick={(e) => { e.stopPropagation(); teacher.schedule ? history.push(`/teacherlist/${teacher.id}/update`, { teacher: teacher }) : history.push(`/teacherprofiles/${teacher.id}/update`, { teacher: { ...teacher, ...teacher.teacherProfile } }) }}
+                            >
+                                Edit
+                            </Button>
+                            <Button key='2' type="primary"
+                                style={{ display: 'none' }}
+                                onClick={() => markAsPresent()}
+                            >
+                                {present ? 'MARK AS PRESENT' : 'MARK AS ABSENT'}
+                            </Button>
+                            <Button key='3' type="primary"
+                                style={{ display: !assigningStatus ? 'block' : 'none', marginLeft: '20px' }}
+                                disabled={(assignStudentList.length > 0 && active) || selectedRow.length > 0 ? false : true}
+                                onClick={() => {
+                                    assignStudent()
+                                }}
+                            >
+                                {active ? 'ASSIGN STUDENTS' : 'UNASSIGN STUDENTS'}
+                            </Button>
+                        </div>
+                    ]}
+                >
 
-                <Row gutter={24} style={{ marginBottom: '3%' }}>
-                    <Card title="Profile" hoverable={true} bordered={true} style={{ width: "48%", marginLeft: '2%' }}>
-                        <Row gutter={16}>
-                            <Col className="gutter-row" span={8}>
-                                <h4>Name</h4>
-                            </Col>
-                            <Col className="gutter-row" span={14}>
-                                <h4>{`${teacher.teacherProfile.firstName} ${teacher.teacherProfile.lastName}`}</h4>
-                            </Col>
-                        </Row>
-                        <Row gutter={16}>
-                            <Col className="gutter-row" span={8}>
-                                <h4 >Email</h4>
-                            </Col>
-                            <Col className="gutter-row" span={14}>
-                                <h4>{`${teacher.teacherProfile.email ? teacher.teacherProfile.email : ''}`}</h4>
-                            </Col>
-                        </Row>
-                        {/* <Row gutter={16}>
+                    <Row gutter={24} style={{ marginBottom: '3%' }}>
+                        <Card title="Profile" hoverable={true} bordered={true} style={{ width: "48%", marginLeft: '2%' }}>
+                            <Row gutter={16}>
+                                <Col className="gutter-row" span={8}>
+                                    <h4>Name</h4>
+                                </Col>
+                                <Col className="gutter-row" span={14}>
+                                    <h4>{`${teacher.teacherProfile.firstName} ${teacher.teacherProfile.lastName}`}</h4>
+                                </Col>
+                            </Row>
+                            <Row gutter={16}>
+                                <Col className="gutter-row" span={8}>
+                                    <h4 >Email</h4>
+                                </Col>
+                                <Col className="gutter-row" span={14}>
+                                    <h4>{`${teacher.teacherProfile.email ? teacher.teacherProfile.email : ''}`}</h4>
+                                </Col>
+                            </Row>
+                            {/* <Row gutter={16}>
                             <Col className="gutter-row" span={8}>
                                 <h4 >Internal Email</h4>
                             </Col>
@@ -594,180 +608,181 @@ function StudentListOfTeacher(props) {
                                 <h4>{`${teacher.teacherProfile.internalEmail}`}</h4>
                             </Col>
                         </Row> */}
-                        <Row gutter={16}>
-                            <Col className="gutter-row" span={8}>
-                                <h4>Conference URL</h4>
-                            </Col>
-                            <Col className="gutter-row" span={14}>
-                                <p onClick={(e) => {
-                                    window.open(teacher.teacherProfile.conferenceUrl ? teacher.teacherProfile.conferenceUrl.includes('http') ? teacher.teacherProfile.conferenceUrl : 'http://' + teacher.teacherProfile.conferenceUrl : '')
-                                    // window.open(teacher.conferenceUrl ? teacher.conferenceUrl.includes('http') ? teacher.conferenceUrl : 'http://' + teacher.conferenceUrl : teacher.teacherProfile.conferenceUrl ? teacher.teacherProfile.conferenceUrl.includes('http') ? teacher.teacherProfile.conferenceUrl : 'http://' + teacher.teacherProfile.conferenceUrl : '')
-                                }}>{`${teacher.teacherProfile.conferenceUrl}`}</p>
-                            </Col>
-                        </Row>
-                        <Row gutter={16}>
-                            <Col className="gutter-row" span={8}>
-                                <h4>Subjects</h4>
-                            </Col>
-                            <Col className="gutter-row" span={14}>
-                                <h4>{subjects.join(', ')}</h4>
-                            </Col>
-                        </Row>
-                        <Row gutter={16}>
-                            <Col className="gutter-row" span={8}>
-                                <h4>Grades</h4>
-                            </Col>
-                            <Col className="gutter-row" span={14}>
-                                <h4>{teacher.teacherProfile.grades ? teacher.teacherProfile.grades.join(', ') : 'No Grades'}</h4>
-                            </Col>
-                        </Row>
-                    </Card>
-
-                    <Card title="Availability" hoverable={true} bordered={true} style={{ width: "48%", marginLeft: '2%' }}>
-                        <Row gutter={16}>
-                            <Col className="gutter-row" span={8}>
-                                <h4>Start Date</h4>
-                            </Col>
-                            <Col className="gutter-row" span={14}>
-                                <h4>
-                                    <Moment local format="D MMM YYYY HH:MM" withTitle>
-                                        {teacher.schedule && teacher.schedule.startDate}
-                                    </Moment>
-                                </h4>
-                            </Col>
-                        </Row>
-                        <Row gutter={16}>
-                            <Col className="gutter-row" span={8}>
-                                <h4>Effective Start Date</h4>
-                            </Col>
-                            <Col className="gutter-row" span={14}>
-                                <h4>
-                                    <Moment local format="D MMM YYYY HH:MM" withTitle>
-                                        {teacher.schedule && teacher.schedule.startDate}
-                                    </Moment>
-                                </h4>
-                            </Col>
-                        </Row>
-                        <Row gutter={16}>
-                            <Col className="gutter-row" span={8}>
-                                <h4>Conference URL</h4>
-                            </Col>
-                            <Col className="gutter-row" span={14} onDoubleClick={() => setEditable(!editable)}>
-                                {!editable ?
+                            <Row gutter={16}>
+                                <Col className="gutter-row" span={8}>
+                                    <h4>Conference URL</h4>
+                                </Col>
+                                <Col className="gutter-row" span={14}>
                                     <p onClick={(e) => {
-                                        window.open(teacher.conferenceUrl ? teacher.conferenceUrl.includes('http') ? teacher.conferenceUrl : 'http://' + teacher.conferenceUrl : '')
-                                    }} >{confUrl}</p> :
-                                    <Form layout="inline">
-                                        <Form.Item>
-                                            <Input
-                                                type="text"
-                                                placeholder="Conference Url"
-                                                name="url"
-                                                value={confUrl}
-                                                onChange={setConferenceUrl}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter') {
-                                                        setEditable(false);
-                                                    }
-                                                }}
-                                            />
-                                        </Form.Item>
-                                    </Form>
-                                }
-                            </Col>
-                        </Row>
-                        <Row gutter={16}>
-                            <Col className="gutter-row" span={8}>
-                                <h4>Students</h4>
-                            </Col>
-                            <Col className="gutter-row" span={14}>
-                                <h4>{teacher.studentCount}</h4>
-                            </Col>
-                        </Row>
-                    </Card>
-                </Row>
+                                        window.open(teacher.teacherProfile.conferenceUrl ? teacher.teacherProfile.conferenceUrl.includes('http') ? teacher.teacherProfile.conferenceUrl : 'http://' + teacher.teacherProfile.conferenceUrl : '')
+                                        // window.open(teacher.conferenceUrl ? teacher.conferenceUrl.includes('http') ? teacher.conferenceUrl : 'http://' + teacher.conferenceUrl : teacher.teacherProfile.conferenceUrl ? teacher.teacherProfile.conferenceUrl.includes('http') ? teacher.teacherProfile.conferenceUrl : 'http://' + teacher.teacherProfile.conferenceUrl : '')
+                                    }}>{`${teacher.teacherProfile.conferenceUrl}`}</p>
+                                </Col>
+                            </Row>
+                            <Row gutter={16}>
+                                <Col className="gutter-row" span={8}>
+                                    <h4>Subjects</h4>
+                                </Col>
+                                <Col className="gutter-row" span={14}>
+                                    <h4>{subjects.join(', ')}</h4>
+                                </Col>
+                            </Row>
+                            <Row gutter={16}>
+                                <Col className="gutter-row" span={8}>
+                                    <h4>Grades</h4>
+                                </Col>
+                                <Col className="gutter-row" span={14}>
+                                    <h4>{teacher.teacherProfile.grades ? teacher.teacherProfile.grades.join(', ') : 'No Grades'}</h4>
+                                </Col>
+                            </Row>
+                        </Card>
 
-                {!studentList || !students ? <Spin /> :
-                    <>
-                        <h2>Students </h2>
-                        <Table
-                            columns={columns}
-                            dataSource={students}
-                            rowSelection={rowSelection}
-                            rowKey="id"
-                        />
-                    </>
-                }
-
-                {!isAddingAssistants && !profile && (
-                    <div style={{ marginTop: 40 }}>
-                        <div style={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            justifyContent: 'space-between'
-                        }}>
-                            <h2>Assistants </h2>
-                            <Button key='3' size="medium" type="primary" onClick={() => setIsAddingAssistants(true)}>
-                                < PlusOutlined />
-                            </Button>
-                        </div>
-                        <Table
-                            columns={assistantColumns}
-                            dataSource={assistants}
-                        />
-                    </div>
-                )}
-
-                {isAddingAssistants && !profile && (
-                    <div style={{ marginTop: 40 }}>
-                        <h2>Select new assistants </h2>
-                        <div style={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            marginBottom: 20
-                        }}>
-                            <SearchFilter
-                                changeInput={changeSearch}
-                                open={open}
-                                profiles={teacherList}
-                                setOpenTrue={() => setOpen(true)}
-                                setOpenFalse={() => setOpen(false)}
-                                loading={profileLoading}
-                                changeProfile={(__, e) => {
-                                    try {
-                                        e.target = {};
-                                        e.target.value = e.firstName + " " + e.lastName
-                                        e.target.name = 'name';
-                                        console.log(e)
-                                        changeSearch(e);
-                                    } catch (err) {
-                                        setSearch({ ...search, firstName: '', lastName: '' });
+                        <Card title="Availability" hoverable={true} bordered={true} style={{ width: "48%", marginLeft: '2%' }}>
+                            <Row gutter={16}>
+                                <Col className="gutter-row" span={8}>
+                                    <h4>Start Date</h4>
+                                </Col>
+                                <Col className="gutter-row" span={14}>
+                                    <h4>
+                                        <Moment local format="D MMM YYYY HH:MM" withTitle>
+                                            {teacher.schedule && teacher.schedule.startDate}
+                                        </Moment>
+                                    </h4>
+                                </Col>
+                            </Row>
+                            <Row gutter={16}>
+                                <Col className="gutter-row" span={8}>
+                                    <h4>Effective Start Date</h4>
+                                </Col>
+                                <Col className="gutter-row" span={14}>
+                                    <h4>
+                                        <Moment local format="D MMM YYYY HH:MM" withTitle>
+                                            {teacher.schedule && teacher.schedule.startDate}
+                                        </Moment>
+                                    </h4>
+                                </Col>
+                            </Row>
+                            <Row gutter={16}>
+                                <Col className="gutter-row" span={8}>
+                                    <h4>Conference URL</h4>
+                                </Col>
+                                <Col className="gutter-row" span={14} onDoubleClick={() => setEditable(!editable)}>
+                                    {!editable ?
+                                        <p onClick={(e) => {
+                                            window.open(teacher.conferenceUrl ? teacher.conferenceUrl.includes('http') ? teacher.conferenceUrl : 'http://' + teacher.conferenceUrl : '')
+                                        }} >{confUrl}</p> :
+                                        <Form layout="inline">
+                                            <Form.Item>
+                                                <Input
+                                                    type="text"
+                                                    placeholder="Conference Url"
+                                                    name="url"
+                                                    value={confUrl}
+                                                    onChange={setConferenceUrl}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            setEditable(false);
+                                                        }
+                                                    }}
+                                                />
+                                            </Form.Item>
+                                        </Form>
                                     }
-                                }}
-                                changeProfileInput={(e) => {
-                                    changeSearch(e);
-                                }}
-                                searchList={searchList}
+                                </Col>
+                            </Row>
+                            <Row gutter={16}>
+                                <Col className="gutter-row" span={8}>
+                                    <h4>Students</h4>
+                                </Col>
+                                <Col className="gutter-row" span={14}>
+                                    <h4>{teacher.studentCount}</h4>
+                                </Col>
+                            </Row>
+                        </Card>
+                    </Row>
+
+                    {!studentList || !students ? <Spin /> :
+                        <>
+                            <h2>Students </h2>
+                            <Table
+                                columns={columns}
+                                dataSource={students}
+                                rowSelection={rowSelection}
+                                rowKey="id"
                             />
-                            <div>
-                                {/* <Button key='3' size="medium" type="primary" onClick={() => updateAssistants(selectedRowProfile, true)}>
-                                    Add selected
-                                </Button> */}
-                                <Button key='3' size="medium" type="warning" style={{ marginLeft: 10 }} onClick={() => setIsAddingAssistants(false)}>
-                                    Cancel
+                        </>
+                    }
+
+                    {!isAddingAssistants && !profile && (
+                        <div style={{ marginTop: 40 }}>
+                            <div style={{
+                                display: 'flex',
+                                flexDirection: 'row',
+                                justifyContent: 'space-between'
+                            }}>
+                                <h2>Assistants </h2>
+                                <Button key='3' size="medium" type="primary" onClick={() => setIsAddingAssistants(true)}>
+                                    < PlusOutlined />
                                 </Button>
                             </div>
+                            <Table
+                                columns={assistantColumns}
+                                dataSource={assistants}
+                            />
                         </div>
-                        <Table
-                            columns={profileColumns}
-                            dataSource={teacherList}
-                            //rowSelection={rowSelectionProfile}
-                            rowKey="id"
-                        />
-                    </div>
-                )}
-            </PageHeader>
+                    )}
+
+                    {isAddingAssistants && !profile && (
+                        <div style={{ marginTop: 40 }}>
+                            <h2>Select new assistants </h2>
+                            <div style={{
+                                display: 'flex',
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                                marginBottom: 20
+                            }}>
+                                <SearchFilter
+                                    changeInput={changeSearch}
+                                    open={open}
+                                    profiles={teacherList}
+                                    setOpenTrue={() => setOpen(true)}
+                                    setOpenFalse={() => setOpen(false)}
+                                    loading={profileLoading}
+                                    changeProfile={(__, e) => {
+                                        try {
+                                            e.target = {};
+                                            e.target.value = e.firstName + " " + e.lastName
+                                            e.target.name = 'name';
+                                            console.log(e)
+                                            changeSearch(e);
+                                        } catch (err) {
+                                            setSearch({ ...search, firstName: '', lastName: '' });
+                                        }
+                                    }}
+                                    changeProfileInput={(e) => {
+                                        changeSearch(e);
+                                    }}
+                                    searchList={searchList}
+                                />
+                                <div>
+                                    {/* <Button key='3' size="medium" type="primary" onClick={() => updateAssistants(selectedRowProfile, true)}>
+                                    Add selected
+                                </Button> */}
+                                    <Button key='3' size="medium" type="warning" style={{ marginLeft: 10 }} onClick={() => setIsAddingAssistants(false)}>
+                                        Cancel
+                                    </Button>
+                                </div>
+                            </div>
+                            <Table
+                                columns={profileColumns}
+                                dataSource={teacherList}
+                                //rowSelection={rowSelectionProfile}
+                                rowKey="id"
+                            />
+                        </div>
+                    )}
+                </PageHeader>
+            }
         </div>
     )
 }

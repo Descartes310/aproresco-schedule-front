@@ -55,7 +55,7 @@ function App() {
       <Switch>
         <LayoutOfApp>
           <React.Suspense fallback={<div>Loading... </div>}>
-            <Route exact path="/" name="Student Page" render={props => <StudentList {...props} />} />
+            <Route exact path="/" name="Teacher Page" render={props => <TeacherList {...props} />} />
             <Route exact path="/login" name="Login Page" render={props => <Login {...props} />} />
             <Route exact path="/login/code/:phone" name="Activation code Page" render={props => <Code {...props} />} />
             <Route exact path="/studentlist" name="Student Page" render={props => <StudentList {...props} />} />
