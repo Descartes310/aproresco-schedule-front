@@ -84,11 +84,11 @@ function StudentListOfTeacher(props) {
     }, [teacherProfile])
 
     const getAvailabilityById = () => {
-        setTeacher(location.state.teacher);
-        // getTeacherAvailabilityById(props.match.params.id).then(data => {
-            // setTeacher(data);
-        getTeacherById(location.state.teacher.teacherProfile.id);
-        // });
+        // setTeacher(location.state.teacher);
+        getTeacherAvailabilityById(props.match.params.id).then(data => {
+            setTeacher(data);
+            getTeacherById(location.state.teacher.teacherProfile.id);
+        });
     }
 
     const getRole = (role) => {

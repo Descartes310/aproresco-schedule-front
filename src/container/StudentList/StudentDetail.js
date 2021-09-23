@@ -4,59 +4,63 @@ import { CheckOutlined } from '@ant-design/icons';
 import { Row, Col, PageHeader, Button, Card } from 'antd';
 import { useLocation, useHistory } from "react-router-dom";
 import React, { useState, useEffect } from 'react';
-import { assignStudentToAnotherTeacher, getStudentDetail, getBookingAvailability, getStudentProfileById, getParentById } from '../../services/Student';
+import { assignStudentToAnotherTeacher, getStudentDetail, getBooking, getBookingAvailability, getStudentProfileById, getParentById } from '../../services/Student';
 import { createComment, updateComment, approveComment, getCourses, getTeacherProfileById, getScheduleById, getBookingComments } from '../../services/Teacher';
 
 function StudentDetail(props) {
 
     const history = useHistory();
     const { params } = props.match;
-    const location = useLocation();
     const [content, setContent] = useState('');
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [comment, setComment] = useState(null);
     const [teacher, setTeacher] = useState(null);
-    const [profile, setProfile] = useState(null);
     const [parent, setParent] = useState(null);
     const [comments, setComments] = useState([]);
-    const [studentDetail, setStudentDetail] = useState(location.state.student);
+    const [studentDetail, setStudentDetail] = useState(null);
 
     useEffect(() => {
-        getComments();
-        getAllCourses();
-        getAvailability();
+        getStudentDetailsById();
     }, []);
 
     useEffect(() => {
-        if (studentDetail.teacherAvailability) {
-            getTeacherProfileById(studentDetail.teacherAvailability.teacherProfile.id).then(teacher => {
-                if (teacher) {
-                    let tmpStudent = studentDetail;
-                    tmpStudent.teacherAvailability.teacherProfile = teacher;
-                    setTeacher(teacher)
-                    setStudentDetail(tmpStudent);
-                }
+        if (studentDetail) {
+            getComments();
+            getAllCourses();
+            getAvailability();
+
+            getParentById(studentDetail.studentProfile.studentParentId).then(parent => {
+                setParent(parent)
             });
 
-            getStudentProfileById(studentDetail.studentProfile.id).then(data => {
-                setProfile(data);
-                getParentById(data.studentParentId).then(parent => {
-                    setParent(parent)
-                });
-            })
-
-            getScheduleById(studentDetail.teacherAvailability.schedule.id).then(schedule => {
+            getScheduleById(studentDetail.schedule.id).then(schedule => {
                 if (schedule) {
                     let tmpStudent = studentDetail;
                     tmpStudent.schedule = schedule;
                     setStudentDetail(tmpStudent);
                 }
             })
-        }
 
-        
-    }, [loading]);
+            if (studentDetail.teacherAvailability) {
+                getTeacherProfileById(studentDetail.teacherAvailability.teacherProfile.id).then(teacher => {
+                    if (teacher) {
+                        let tmpStudent = studentDetail;
+                        tmpStudent.teacherAvailability.teacherProfile = teacher;
+                        setTeacher(teacher)
+                        setStudentDetail(tmpStudent);
+                    }
+                });
+
+            }
+        }
+    }, [studentDetail]);
+
+    const getStudentDetailsById = () => {
+        getBooking(props.match.params.id).then(student => {
+            setStudentDetail(student);
+        });
+    }
 
     const getAllCourses = () => {
         getCourses().then(data => {
@@ -132,6 +136,8 @@ function StudentDetail(props) {
             })
     };
 
+    console.log(studentDetail);
+
     return (
         <div>
             {studentDetail ?
@@ -166,7 +172,7 @@ function StudentDetail(props) {
                                 <Col className="gutter-row" span={14}>
                                     <h4 >
                                         <Moment local format="D MMM YYYY HH:MM" withTitle>
-                                            {studentDetail.teacherAvailability ? studentDetail.teacherAvailability.schedule ? studentDetail.teacherAvailability.schedule.startDate : '' : ''}
+                                            { studentDetail.schedule ? studentDetail.schedule.startDate : '' }
                                         </Moment>
                                     </h4>
                                 </Col>
@@ -176,7 +182,7 @@ function StudentDetail(props) {
                                     <h4 >Subject</h4>
                                 </Col>
                                 <Col className="gutter-row" span={14}>
-                                    <h4 >{studentDetail.teacherAvailability ? studentDetail.teacherAvailability.schedule ? studentDetail.teacherAvailability.schedule.course  ? studentDetail.teacherAvailability.schedule.course.name : '' : '' : ''}</h4>
+                                    <h4 >{studentDetail.schedule.course ? studentDetail.schedule.course.name : '' }</h4>
                                 </Col>
                             </Row>
                             <Row gutter={16}>
@@ -202,7 +208,7 @@ function StudentDetail(props) {
                                     <h4 >{parent ? parent.email : ''}</h4>
                                 </Col>
                             </Row>
-                            <Row gutter={16}>
+                            <Row gutter={16} style={{ display: studentDetail.conferenceUrl ? 'visible' : 'none' }}>
                                 <Col className="gutter-row" span={8}>
                                     <h4 >Booking URL</h4>
                                 </Col>
@@ -210,12 +216,12 @@ function StudentDetail(props) {
                                     <h4 onClick={() => window.open(studentDetail.conferenceUrl ? studentDetail.conferenceUrl.includes('http') ? studentDetail.conferenceUrl : 'http://' + studentDetail.conferenceUrl : '')}>{studentDetail.conferenceUrl}</h4>
                                 </Col>
                             </Row>
-                            <Row gutter={16}>
+                            <Row gutter={16} style={{ display: studentDetail.studentProfile.conferenceUrl ? 'visible' : 'none' }}>
                                 <Col className="gutter-row" span={8}>
                                     <h4 >Student URL</h4>
                                 </Col>
                                 <Col className="gutter-row" span={14}>
-                                    <h4 onClick={() => window.open(profile ? profile.conferenceUrl.includes('http') ? profile.conferenceUrl : 'http://' + profile.conferenceUrl : '')}>{profile ? profile.conferenceUrl : ''}</h4>
+                                    <h4 onClick={() => window.open(studentDetail ? studentDetail.studentProfile.conferenceUrl.includes('http') ? studentDetail.studentProfile.conferenceUrl : 'http://' + studentDetail.studentProfile.conferenceUrl : '')}>{studentDetail.studentProfile ? studentDetail.studentProfile.conferenceUrl : ''}</h4>
                                 </Col>
                             </Row>
                             <Row gutter={16}>

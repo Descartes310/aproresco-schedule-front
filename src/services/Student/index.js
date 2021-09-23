@@ -375,9 +375,9 @@ export const editSubject = (id, subject) => {
 }
 
 export const getBooking = (id) => {
-    return axios.get(`${routes.SERVER_ADDRESS}/${routes.BOOKING}/${id}`)
+    return axios.get(`${routes.BOOKING}/${id}`)
         .then(res => {
-            return res;
+            return res.data;
         })
         .catch(err => {
             //alert(err.message);
