@@ -10,6 +10,7 @@ import { Table, PageHeader, Button, Spin, Tooltip, Typography } from 'antd';
 import { faCircle } from '@fortawesome/free-solid-svg-icons'
 import { VerticalAlignBottomOutlined, VerticalAlignTopOutlined, PlusOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons"
 import { findStudentProfileByFirstNameAndLastName, getStudentProfileByDate, deleteStudentProfiles, sendStudentsMessage, getParentProfile } from '../../services/Student'
+import { truncate } from '../../components/helpers';
 
 const { Text } = Typography;
 
@@ -96,13 +97,13 @@ function StudentProfile() {
                     </Tooltip>
                     <Tooltip title={(record.firstName + " " + record.lastName)}>
                         <Button
-                            style={{ backgroundColor: "transparent", border: "0px", cursor: 'pointer', width: "60%" }}
+                            style={{ backgroundColor: "transparent", border: "0px", cursor: 'pointer' }}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 history.push(`/studentprofiles/${record.id}/details`, { student: record })
                                 // history.push(`/studentlist/studentDetail/${record.id}`)
                             }}>
-                            <p style={{ width: "50%", textAlign: "left" }}>
+                            <p style={{ textAlign: "left" }}>
                                 {(record.firstName + " " + record.lastName).length <= 20 ?
                                     record.firstName + " " + record.lastName :
                                     (record.firstName + " " + record.lastName).substring(0, 19) + '...'}
@@ -121,8 +122,8 @@ function StudentProfile() {
                 return (
                     <div>
                         {
-                            <p style={{ width: "50%", textAlign: "left" }}>
-                                {record.parent ? record.parent.phoneNumber : ''}
+                            <p style={{ textAlign: "left" }}>
+                                <Tooltip title={record.parent ? record.parent.phoneNumber : ''}>{record.parent ? truncate(record.parent.phoneNumber, 15) : ''}</Tooltip>
                             </p>
                         }
                     </div>
@@ -149,7 +150,7 @@ function StudentProfile() {
             render: (record) => {
                 return (
                     <div>
-                        {record.email}
+                        <Tooltip title={record ? record.email : ''}>{record ? truncate(record.email, 20) : ''}</Tooltip>
                     </div>
                 )
             },

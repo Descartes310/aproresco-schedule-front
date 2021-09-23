@@ -21,6 +21,7 @@ import {
     findStudentListByFirstNameAndLastName, getParentProfile, getStudentListByDate, editSubject,
     assignStudentToAnotherTeacher, deleteBookings, getSchedules
 } from '../../services/Student';
+import { truncate } from '../../components/helpers';
 
 const { Text } = Typography;
 
@@ -225,7 +226,7 @@ function StudentList() {
                 let parent = parents.find(p => p.id === record.studentProfile.studentParentId);
                 record.parent = parent;
                 return (
-                    <span>{parent ? parent.email : ''}</span>
+                    <Tooltip title={parent ? parent.email : ''}>{parent ? truncate(parent.email, 20) : ''}</Tooltip>
                 )
             },
             key: 'parentEmail',

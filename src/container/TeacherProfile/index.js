@@ -12,6 +12,7 @@ import SearchFilter from '../../components/StudentList/SearchFilter';
 import { Table, PageHeader, Button, Spin, Tooltip, Typography } from 'antd';
 import { findTeacherProfileByFirstNameAndLastName, getTeacherProfileByDate, deleteTeacherProfile } from '../../services/Student';
 import { VerticalAlignBottomOutlined, VerticalAlignTopOutlined, PlusOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { truncate } from '../../components/helpers';
 
 const { Text } = Typography;
 
@@ -147,7 +148,7 @@ function TeacherProfile() {
             render: (record) => {
                 return (
                     <div>
-                        {record.email ? record.email : record.internalEmail}
+                        <Tooltip title={record.email ? record.email : record.internalEmail}>{record.email ? truncate(record.email, 20) : truncate(record.internalEmail, 20)}</Tooltip>
                     </div>
                 )
             },

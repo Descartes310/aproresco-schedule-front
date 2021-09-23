@@ -108,7 +108,17 @@ function Schedule() {
                     </div>
                 )
             },
-            key: 'subject',
+            key: 'course',
+        },
+        {
+            title: 'Grades',
+            render: (record) => {
+                let course = record.course;
+                return (
+                    <h4>{course.grades ? course.grades.join(', ') : 'No Grades'}</h4>
+                )
+            },
+            key: 'grades',
         },
         {
             title: <div><span>Start Date </span>
@@ -154,12 +164,11 @@ function Schedule() {
                 };
             },
             render: (record) => {
-                let f = record.endDate;
-                let date = (new Date(f)).toLocaleDateString();
-
                 return (
                     <span>
-                        {date}
+                        <Moment local format="D/MM/YYYY HH:mm" withTitle>
+                            {record.endDate}
+                        </Moment>
                     </span>
                 )
             },
@@ -178,18 +187,6 @@ function Schedule() {
             }
         },
         {
-            title: 'Grades',
-            key: 'grades',
-            render: (record) => {
-                let course = record.course;
-                return (
-                    <div>
-                        {gradesToPrint(course)}
-                    </div>
-                )
-            }
-        },
-        {
             title: 'Price',
             key: 'price',
             render: (record) => {
@@ -197,6 +194,18 @@ function Schedule() {
                 return (
                     <div>
                         {record.price + ' ' + currency}
+                    </div>
+                )
+            }
+        },
+        {
+            title: 'Language',
+            key: 'language',
+            render: (record) => {
+                let lang = record.language ? record.language : 'fr';
+                return (
+                    <div>
+                        {lang}
                     </div>
                 )
             }
@@ -213,13 +222,13 @@ function Schedule() {
             }
         },
         {
-            title: 'Language',
-            key: 'language',
+            title: 'Grades',
+            key: 'grades',
             render: (record) => {
-                let lang = record.language ? record.language : 'fr';
+                let course = record.course;
                 return (
                     <div>
-                        {lang}
+                        {gradesToPrint(course)}
                     </div>
                 )
             }
