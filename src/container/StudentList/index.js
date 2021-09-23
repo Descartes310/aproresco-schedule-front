@@ -202,7 +202,7 @@ function StudentList() {
             render: (record) => (
                 <span>
                     {
-                        <Moment local format="D/MM/YYYY hh:mm" withTitle>
+                        <Moment local format="D/MM/YYYY HH:MM" withTitle>
                             {record.schedule.startDate}
                         </Moment>
                     }

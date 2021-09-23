@@ -74,8 +74,8 @@ function CreateSchedule() {
 
         let data = {
             course: courses.find(c => c.id === courseId),
-            startDate: d+' '+startTime+':00 -0500',
-            endDate: f+' '+endTime+':00 -0500',
+            startDate: d+' '+startTime+':00 '+new Date().toString().split('GMT')[1].split(' ')[0].trim(),
+            endDate: f+' '+endTime+':00 '+new Date().toString().split('GMT')[1].split(' ')[0].trim(),
             repeatPeriodInDays: repeatPeriod,
         }
 
@@ -83,6 +83,8 @@ function CreateSchedule() {
             history.push(`/schedules`)
         }).finally(() => setSubmitting(false));
     }
+
+    console.log(new Date().toString().split('GMT')[1].split(' ')[0].trim());
 
     return (
 

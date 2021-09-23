@@ -120,7 +120,7 @@ function TeacherProfile() {
             render: (record) => (
                 <div>
                     {
-                        <Moment local format="D/MM/YYYY hh:mm" withTitle>
+                        <Moment local format="D/MM/YYYY HH:MM" withTitle>
                             {record.createDate}
                         </Moment>
                     }

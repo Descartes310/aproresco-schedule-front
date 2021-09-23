@@ -117,7 +117,7 @@ function Schedule() {
             render: (record) => {
                 return (
                     <span>
-                        <Moment local format="D/MM/YYYY hh:mm" withTitle>
+                        <Moment local format="D/MM/YYYY HH:mm" withTitle>
                             {record.startDate}
                         </Moment>
                     </span>
@@ -267,7 +267,7 @@ function Schedule() {
     useEffect(() => {
         getListView();
         getAllCourses();
-    }, [sortingType, sortingName, tableProps.pageIndex]);
+    }, [sortingType, sortingName, tableProps.pageIndex, tableProps.pageSize]);
 
     const computeLastName = (name) => {
         let lastName = '';
