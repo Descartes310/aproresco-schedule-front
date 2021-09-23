@@ -178,8 +178,8 @@ export const getTeacherListByDate = (start, end, page, size, sortName = 'firstNa
 
         if (localStorage.getItem('startDate') == null || localStorage.getItem('toStart') == null) {
             localStorage.setItem('startDate', year + '-' + month + '-' + day)
-            localStorage.setItem('toStart', month + '%2F' + day + '%2F' + year + '%20' + hours + ':' + minutes + ':00 -0500')
-            start = month + '%2F' + day + '%2F' + year + '%20' + hours + ':' + minutes + ':00 -0500';
+            localStorage.setItem('toStart', month + '%2F' + day + '%2F' + year + '%20' + hours + ':' + minutes + ':00 '+new Date().toString().split('GMT')[1].split(' ')[0].trim())
+            start = month + '%2F' + day + '%2F' + year + '%20' + hours + ':' + minutes + ':00 '+new Date().toString().split('GMT')[1].split(' ')[0].trim();
         }
 
         if (localStorage.getItem('startTime') == null) {
@@ -196,8 +196,8 @@ export const getTeacherListByDate = (start, end, page, size, sortName = 'firstNa
 
         if (localStorage.getItem('endDate') == null || localStorage.getItem('toEnd') == null) {
             localStorage.setItem('endDate', year + '-' + month + '-' + day)
-            localStorage.setItem('toEnd', month + '%2F' + day + '%2F' + year + '%20' + hours + ':' + minutes + ':00 -0500')
-            end = month + '%2F' + day + '%2F' + year + '%20' + hours + ':' + minutes + ':00 -0500';
+            localStorage.setItem('toEnd', month + '%2F' + day + '%2F' + year + '%20' + hours + ':' + minutes + ':00 '+new Date().toString().split('GMT')[1].split(' ')[0].trim())
+            end = month + '%2F' + day + '%2F' + year + '%20' + hours + ':' + minutes + ':00 '+new Date().toString().split('GMT')[1].split(' ')[0].trim();
 
         }
 

@@ -247,7 +247,7 @@ export default function TagsList() {
         const { name, value,type } = e.target;
         if (type === "date") {
             const date = new Date(value)
-            const toDurationStr = `${(date.getMonth()+1).toString().padStart(2, '0')}/${(date.getDate()).toString().padStart(2, '0')}/${date.getFullYear()} ${(date.getHours()).toString().padStart(2, '0')}:${(date.getMinutes()).toString().padStart(2, '0')}:00 -0500`
+            const toDurationStr = `${(date.getMonth()+1).toString().padStart(2, '0')}/${(date.getDate()).toString().padStart(2, '0')}/${date.getFullYear()} ${(date.getHours()).toString().padStart(2, '0')}:${(date.getMinutes()).toString().padStart(2, '0')}:00 ${new Date().toString().split('GMT')[1].split(' ')[0].trim()}`
             localStorage.setItem(`createDate`, toDurationStr)
         } 
         setSearch({ ...search, [name]: value });
