@@ -358,7 +358,7 @@ function TeacherList() {
                 return (
                     <span>
 
-                        <Moment local format="D/MM/YYYY HH:MM" withTitle>
+                        <Moment local format="MM/DD/YYYY HH:MM" withTitle>
                             {record.schedule ? record.schedule.startDate : new Date(null)}
                         </Moment>
                     </span>

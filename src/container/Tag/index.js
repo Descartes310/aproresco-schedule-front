@@ -1,4 +1,5 @@
 import 'antd/dist/antd.css';
+import Moment from 'react-moment';
 import { useHistory } from 'react-router-dom'
 import React, { useEffect, useState } from 'react'
 import { Table, PageHeader,Button,Spin } from 'antd';
@@ -96,15 +97,12 @@ export default function TagsList() {
         {
             title: <div><span>Create Date </span></div>,
             render: (record) => {
-                let s = record.createDate;
-                let date = (new Date(s)).toLocaleDateString();
-                let sTime= ((new Date(s)).toLocaleTimeString()).split(':');
-
-                let sst= sTime[0]+':'+sTime[1];
                 
                 return (
                     <span>
-                        {date +" "+ sst}
+                        <Moment local format="MM/DD/YYYY HH:mm" withTitle>
+                            {record.createDate}
+                        </Moment>
                     </span>
                 )
             },

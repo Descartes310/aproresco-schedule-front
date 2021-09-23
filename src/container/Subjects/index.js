@@ -1,4 +1,5 @@
 import 'antd/dist/antd.css';
+import Moment from 'react-moment';
 import { useHistory } from 'react-router-dom';
 import { getSubjects } from '../../services/Teacher';
 import React, { useEffect, useState } from 'react';
@@ -83,15 +84,11 @@ export default function SubjectsList() {
         {
             title: <div><span>Create Date </span></div>,
             render: (record) => {
-                let s = record.createDate;
-                let date = (new Date(s)).toLocaleDateString();
-                let sTime = ((new Date(s)).toLocaleTimeString()).split(':');
-
-                let sst = sTime[0] + ':' + sTime[1];
-
                 return (
                     <span>
-                        {date + " " + sst}
+                        <Moment local format="MM/DD/YYYY HH:mm" withTitle>
+                            {record.createDate}
+                        </Moment>
                     </span>
                 )
             },
@@ -127,7 +124,7 @@ export default function SubjectsList() {
         getSubjects(tableProps.pageIndex, tableProps.pageSize, sortingName, sortingType, name).then(data => {
             if (data) {
                 if (data.content) {
-                    data.content = data.content.sort(function(a, b) {
+                    data.content = data.content.sort(function (a, b) {
                         var dateA = new Date(a.createDate), dateB = new Date(b.createDate);
                         return dateB - dateA;
                     });

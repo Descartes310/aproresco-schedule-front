@@ -101,7 +101,7 @@ function ShortMessageList(props) {
             render: (record) => (
                 <div>
                     {
-                        <Moment local format="D/MM/YYYY HH:mm:SS" withTitle>
+                        <Moment local format="MM/DD/YYYY HH:mm:SS" withTitle>
                             {record.createDate}
                         </Moment>
                     }
