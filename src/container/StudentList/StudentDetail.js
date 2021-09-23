@@ -4,7 +4,7 @@ import { CheckOutlined } from '@ant-design/icons';
 import { Row, Col, PageHeader, Button, Card } from 'antd';
 import { useLocation, useHistory } from "react-router-dom";
 import React, { useState, useEffect } from 'react';
-import { assignStudentToAnotherTeacher, getStudentDetail, getBooking, getBookingAvailability, getStudentProfileById, getParentById } from '../../services/Student';
+import { assignStudentToAnotherTeacher, getStudentDetail, getBooking, getBookingAvailability, getStudentProfileById, getParentById, getStudentListByDate } from '../../services/Student';
 import { createComment, updateComment, approveComment, getCourses, getTeacherProfileById, getScheduleById, getBookingComments } from '../../services/Teacher';
 
 function StudentDetail(props) {
@@ -16,6 +16,7 @@ function StudentDetail(props) {
     const [loading, setLoading] = useState(true);
     const [comment, setComment] = useState(null);
     const [teacher, setTeacher] = useState(null);
+    const [availability, setAvailability] = useState(null);
     const [parent, setParent] = useState(null);
     const [comments, setComments] = useState([]);
     const [studentDetail, setStudentDetail] = useState(null);
@@ -25,7 +26,7 @@ function StudentDetail(props) {
     }, []);
 
     useEffect(() => {
-        if (studentDetail) {
+        if (studentDetail) { 
             getComments();
             getAllCourses();
             getAvailability();
@@ -41,18 +42,6 @@ function StudentDetail(props) {
                     setStudentDetail(tmpStudent);
                 }
             })
-
-            if (studentDetail.teacherAvailability) {
-                getTeacherProfileById(studentDetail.teacherAvailability.teacherProfile.id).then(teacher => {
-                    if (teacher) {
-                        let tmpStudent = studentDetail;
-                        tmpStudent.teacherAvailability.teacherProfile = teacher;
-                        setTeacher(teacher)
-                        setStudentDetail(tmpStudent);
-                    }
-                });
-
-            }
         }
     }, [studentDetail]);
 
@@ -72,8 +61,7 @@ function StudentDetail(props) {
         })
     }
     const getComments = () => {
-        getBookingComments(studentDetail.id).then(data => {
-            console.log(data)
+        getBookingComments().then(data => {
             if (data) {
                 if (data.content) {
                     setComments(data.content);
@@ -83,13 +71,20 @@ function StudentDetail(props) {
     }
 
     const getAvailability = () => {
-        getBookingAvailability(studentDetail.id).then(data => {
+        getBookingAvailability(props.match.params.id).then(data => {
             if (data.length > 0) {
                 let tmp = data[0];
                 tmp.parent = studentDetail.parent;
                 tmp.schedule = studentDetail.schedule;
                 tmp.studentProfile = studentDetail.studentProfile;
-                setStudentDetail(tmp);
+                setAvailability(tmp.teacherAvailability);
+
+                getTeacherProfileById(tmp.teacherAvailability.teacherProfile.id).then(teacher => {
+                    if (teacher) {
+                        setTeacher(teacher);
+                    }
+                });
+                // setStudentDetail(tmp);
             }
         }).finally(() => setLoading(false))
     }
@@ -135,8 +130,6 @@ function StudentDetail(props) {
                 //window.location.reload();
             })
     };
-
-    console.log(studentDetail);
 
     return (
         <div>
@@ -277,15 +270,15 @@ function StudentDetail(props) {
                         </Card>
 
                         <Card title="Teacher informations" hoverable={true} bordered={true} style={{ width: "48%", marginLeft: '2%' }}>
-                            <Row gutter={16} style={{ display: studentDetail.teacherAvailability ? studentDetail.teacherAvailability.teacherProfile ? 'flex' : 'none' : 'none' }}>
+                            <Row gutter={16} style={{ display: availability ? availability.teacherProfile ? 'flex' : 'none' : 'none' }}>
                                 <Col className="gutter-row" span={8}>
                                     <h4>Name</h4>
                                 </Col>
                                 <Col className="gutter-row" span={14}>
-                                    <h4 >{studentDetail.teacherAvailability ? studentDetail.teacherAvailability.teacherProfile ? studentDetail.teacherAvailability.teacherProfile.firstName : '' : ''} {studentDetail.teacherAvailability ? studentDetail.teacherAvailability.teacherProfile ? studentDetail.teacherAvailability.teacherProfile.lastName : '' : ''}</h4>
+                                    <h4 >{availability ? availability.teacherProfile ? availability.teacherProfile.firstName : '' : ''} {availability ? availability.teacherProfile ? availability.teacherProfile.lastName : '' : ''}</h4>
                                 </Col>
                             </Row>
-                            <Row gutter={16} style={{ display: studentDetail.teacherAvailability ? studentDetail.teacherAvailability.teacherProfile ? 'flex' : 'none' : 'none' }}>
+                            <Row gutter={16} style={{ display: availability ? availability.teacherProfile ? 'flex' : 'none' : 'none' }}>
                                 <Col className="gutter-row" span={8}>
                                     <h4>Subjects</h4>
                                 </Col>
@@ -293,7 +286,7 @@ function StudentDetail(props) {
                                     <h4 >{teacher ? teacher.subjects ? teacher.subjects.map(s => s.name).join(', ') : '' : ''}</h4>
                                 </Col>
                             </Row>
-                            <Row gutter={16} style={{ display: studentDetail.teacherAvailability ? studentDetail.teacherAvailability.teacherProfile ? 'flex' : 'none' : 'none' }}>
+                            <Row gutter={16} style={{ display: availability ? availability.teacherProfile ? 'flex' : 'none' : 'none' }}>
                                 <Col className="gutter-row" span={8}>
                                     <h4 >Grades</h4>
                                 </Col>
@@ -301,38 +294,38 @@ function StudentDetail(props) {
                                     <h4 >{teacher ? teacher.grades ? teacher.grades.join(', ') : '' : ''}</h4>
                                 </Col>
                             </Row>
-                            <Row gutter={16} style={{ display: studentDetail.teacherAvailability ? studentDetail.teacherAvailability.teacherProfile ? 'flex' : 'none' : 'none' }}>
+                            <Row gutter={16} style={{ display: availability ? availability.teacherProfile ? 'flex' : 'none' : 'none' }}>
                                 <Col className="gutter-row" span={8}>
                                     <h4>ConferenceUrl</h4>
                                 </Col>
                                 <Col className="gutter-row" span={14}>
-                                    <h4 onClick={() => studentDetail.teacherAvailability ?
-                                        studentDetail.teacherAvailability.teacherProfile ?
-                                            window.open(studentDetail.teacherAvailability.teacherProfile.conferenceUrl.includes('http') ? studentDetail.teacherAvailability.teacherProfile.conferenceUrl : 'http://' + studentDetail.teacherAvailability.teacherProfile.conferenceUrl) : null : null}>{studentDetail.teacherAvailability ? studentDetail.teacherAvailability.teacherProfile ? studentDetail.teacherAvailability.teacherProfile.conferenceUrl : '' : ''}</h4>
+                                    <h4 onClick={() => availability ?
+                                        availability.teacherProfile ?
+                                            window.open(availability.teacherProfile.conferenceUrl.includes('http') ? availability.teacherProfile.conferenceUrl : 'http://' + availability.teacherProfile.conferenceUrl) : null : null}>{availability ? availability.teacherProfile ? availability.teacherProfile.conferenceUrl : '' : ''}</h4>
                                 </Col>
                             </Row>
-                            <Row gutter={16} style={{ display: studentDetail.teacherAvailability ? studentDetail.teacherAvailability.teacherProfile ? 'flex' : 'none' : 'none' }}>
+                            <Row gutter={16} style={{ display: availability ? availability.teacherProfile ? 'flex' : 'none' : 'none' }}>
                                 <Col className="gutter-row" span={8}>
                                     <h4 >Email</h4>
                                 </Col>
                                 <Col className="gutter-row" span={14}>
-                                    <h4 >{studentDetail.teacherAvailability ? studentDetail.teacherAvailability.teacherProfile ? studentDetail.teacherAvailability.teacherProfile.email : '' : ''}</h4>
+                                    <h4 >{teacher ? teacher.email : ''}</h4>
                                 </Col>
                             </Row>
-                            <Row gutter={16} style={{ display: studentDetail.teacherAvailability ? studentDetail.teacherAvailability.teacherProfile ? 'flex' : 'none' : 'none' }}>
+                            <Row gutter={16} style={{ display: availability ? availability.teacherProfile ? 'flex' : 'none' : 'none' }}>
                                 <Col className="gutter-row" span={8}>
                                     <h4>Phone</h4>
                                 </Col>
                                 <Col className="gutter-row" span={14}>
-                                    <h4 >{studentDetail.teacherAvailability ? studentDetail.teacherAvailability.teacherProfile ? studentDetail.teacherAvailability.teacherProfile.phoneNumber : '' : ''}</h4>
+                                    <h4 >{availability ? availability.teacherProfile ? availability.teacherProfile.phoneNumber : '' : ''}</h4>
                                 </Col>
                             </Row>
-                            <Row gutter={16} style={{ display: studentDetail.teacherAvailability ? 'flex' : 'none' }}>
+                            <Row gutter={16} style={{ display: availability ? 'flex' : 'none' }}>
                                 <Col className="gutter-row" span={8}>
                                     <h4 >Comment</h4>
                                 </Col>
                                 <Col className="gutter-row" span={14}>
-                                    <h4 >{studentDetail.teacherAvailability ? studentDetail.teacherAvailability.studentCount : ''}</h4>
+                                    <h4 >{availability ? availability.studentCount : ''}</h4>
                                 </Col>
                             </Row>
                         </Card>

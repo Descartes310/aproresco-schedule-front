@@ -167,7 +167,10 @@ export default function TagsList() {
             getTags(tableProps.pageIndex, tableProps.pageSize, sortingName, sortingType).then(data =>{
                 if(data){
                     if (data.content) {
-                        console.log(data.content);
+                        data.content = data.content.sort(function(a, b) {
+                            var dateA = new Date(a.createDate), dateB = new Date(b.createDate);
+                            return dateB - dateA;
+                        });
                         setTagList([...new Map(data.content.map(item => [item['id'], item])).values()])
                         setTableProps({
                             ...tableProps,
@@ -189,7 +192,10 @@ export default function TagsList() {
             getTagByDate(tableProps.pageIndex, tableProps.pageSize, sortingName, sortingType, search.name, localStorage.getItem('createDate')).then(data=>{
                 if(data){
                     if (data.content) {
-                        console.log(data.content);
+                        data.content = data.content.sort(function(a, b) {
+                            var dateA = new Date(a.createDate), dateB = new Date(b.createDate);
+                            return dateB - dateA;
+                        });
                         setTagList([...new Map(data.content.map(item => [item['id'], item])).values()])
                         setTableProps({
                             ...tableProps,

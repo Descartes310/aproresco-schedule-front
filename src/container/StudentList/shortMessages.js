@@ -122,6 +122,10 @@ function ShortMessageList(props) {
             getShortMessages(params.id, "", tableProps.pageIndex, tableProps.pageSize, sortingName, sortingType).then(data => {
                 if (data) {
                     if (data.content) {
+                        data.content = data.content.sort(function(a, b) {
+                            var dateA = new Date(a.createDate), dateB = new Date(b.createDate);
+                            return dateB - dateA;
+                        });
                         setStudentList(data.content)
                         setTableProps({
                             ...tableProps,
@@ -151,6 +155,10 @@ function ShortMessageList(props) {
             getShortMessages(params.id, search.firstName.trim(), tableProps.pageIndex, tableProps.pageSize, sortingName, sortingType).then(data => {
                 if (data) {
                     if (data.content) {
+                        data.content = data.content.sort(function(a, b) {
+                            var dateA = new Date(a.createDate), dateB = new Date(b.createDate);
+                            return dateB - dateA;
+                        });
                         setStudentList(data.content)
                         setTableProps({
                             ...tableProps,

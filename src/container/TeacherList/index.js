@@ -170,6 +170,10 @@ function TeacherList() {
             getTeacherListByDate(localStorage.getItem('toStart'), localStorage.getItem('toEnd'), tableProps.pageIndex, tableProps.pageSize, sortingName, sortingType).then(data => {
                 if (data) {
                     if (data.content) {
+                        data.content = data.content.sort(function(a, b) {
+                            var dateA = new Date(a.createDate), dateB = new Date(b.createDate);
+                            return dateB - dateA;
+                        });
                         setTeacherList(data.content);
                         setTableProps({
                             ...tableProps,
@@ -198,6 +202,10 @@ function TeacherList() {
             findTeacherListByFirstNameAndLastName(search.firstName.trim(), localStorage.getItem('toStart'), localStorage.getItem('toEnd'), tableProps.pageIndex, tableProps.pageSize, null, sortingName, sortingType).then(data => {
                 if (data) {
                     if (data.content) {
+                        data.content = data.content.sort(function(a, b) {
+                            var dateA = new Date(a.createDate), dateB = new Date(b.createDate);
+                            return dateB - dateA;
+                        });
                         setTeacherList(data.content);
                         setTableProps({
                             ...tableProps,
@@ -225,7 +233,10 @@ function TeacherList() {
             findTeacherListByFirstNameAndLastName(search.firstName.trim(), localStorage.getItem('toStart'), localStorage.getItem('toEnd'), tableProps.pageIndex, tableProps.pageSize, localStorage.getItem('currentTag'), sortingName, sortingType).then(data => {
                 if (data) {
                     if (data.content) {
-                        //console.log(data.content)
+                        data.content = data.content.sort(function(a, b) {
+                            var dateA = new Date(a.createDate), dateB = new Date(b.createDate);
+                            return dateB - dateA;
+                        });
                         setTeacherList(data.content);
                         setTableProps({
                             ...tableProps,

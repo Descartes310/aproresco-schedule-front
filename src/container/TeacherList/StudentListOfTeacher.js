@@ -12,7 +12,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { assignStudents } from '../../Action-Reducer/Student/action';
 import { Table, PageHeader, Button, Spin, Tooltip } from 'antd';
 import { faCrown, faShieldAlt, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
-import { assignStudentToAnotherTeacher, assignMeetingToAnotherTeacher, findTeacherProfileByFirstNameAndLastName, unAssignStudentToAnotherTeacher } from '../../services/Student';
+import { assignStudentToAnotherTeacher, assignMeetingToAnotherTeacher, findTeacherProfileByFirstNameAndLastName, unAssignStudentToAnotherTeacher, getStudentListByDate } from '../../services/Student';
 import { markTeacherAsPresent, markAsSupervisor, getTeacherProfileById, getTeacherAvailabilityById, markAsAdmin, markAsApproved, updateAvailabilityAssistants, getSubjectById, getAvailabilityBookings, removeAvailabilityAssistants } from '../../services/Teacher';
 
 function StudentListOfTeacher(props) {
@@ -64,7 +64,7 @@ function StudentListOfTeacher(props) {
 
     useEffect(() => {
         getAvailabilityById();
-    }, [])
+    }, []);
 
     useEffect(() => {
         if (teacherProfile) {

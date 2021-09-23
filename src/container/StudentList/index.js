@@ -479,6 +479,10 @@ function StudentList() {
         findTeacherListByFirstNameAndLastName(teacherSearch.firstName.trim(), localStorage.getItem('toStart'), localStorage.getItem('toEnd'), 0, 500, null, sortingName, sortingType).then(data => {
             if (data) {
                 if (data.content) {
+                    data.content = data.content.sort(function(a, b) {
+                        var dateA = new Date(a.createDate), dateB = new Date(b.createDate);
+                        return dateB - dateA;
+                    });
                     setTeacherList(data.content)
                 } else {
                     setTeacherList([])
@@ -542,6 +546,10 @@ function StudentList() {
             getStudentListByDate(localStorage.getItem('toStart'), localStorage.getItem('toEnd'), tableProps.pageIndex, tableProps.pageSize, sortingName, sortingType).then(data => {
                 if (data) {
                     if (data.content) {
+                        data.content = data.content.sort(function(a, b) {
+                            var dateA = new Date(a.createDate), dateB = new Date(b.createDate);
+                            return dateB - dateA;
+                        });
                         setStudentList(data.content)
                         setTableProps({
                             ...tableProps,
@@ -571,6 +579,10 @@ function StudentList() {
             findStudentListByFirstNameAndLastName(search.firstName.trim(), localStorage.getItem('toStart'), localStorage.getItem('toEnd'), tableProps.pageIndex, tableProps.pageSize, null, sortingName, sortingType).then(data => {
                 if (data) {
                     if (data.content) {
+                        data.content = data.content.sort(function(a, b) {
+                            var dateA = new Date(a.createDate), dateB = new Date(b.createDate);
+                            return dateB - dateA;
+                        });
                         setStudentList(data.content)
                         setTableProps({
                             ...tableProps,
@@ -599,6 +611,10 @@ function StudentList() {
             findStudentListByFirstNameAndLastName(search.firstName.trim(), localStorage.getItem('toStart'), localStorage.getItem('toEnd'), tableProps.pageIndex, tableProps.pageSize, localStorage.getItem('currentTag'), sortingName, sortingType).then(data => {
                 if (data) {
                     if (data.content) {
+                        data.content = data.content.sort(function(a, b) {
+                            var dateA = new Date(a.createDate), dateB = new Date(b.createDate);
+                            return dateB - dateA;
+                        });
                         setStudentList(data.content)
                         setTableProps({
                             ...tableProps,

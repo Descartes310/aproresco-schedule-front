@@ -99,6 +99,18 @@ function Schedule() {
             key: 'subject',
         },
         {
+            title: 'Course',
+            render: (record) => {
+                let course = record.course;
+                return (
+                    <div>
+                        {course ? course.name : '' }
+                    </div>
+                )
+            },
+            key: 'subject',
+        },
+        {
             title: <div><span>Start Date </span>
                 {sortingName === "startDate" && sortingType === "asc" && <VerticalAlignBottomOutlined />}
                 {sortingName === "startDate" && sortingType === "desc" && <VerticalAlignTopOutlined />}
@@ -160,7 +172,7 @@ function Schedule() {
                 let course = record.course;
                 return (
                     <div>
-                        {course ? course.durationInMinutes ? course.durationInMinutes+' min' : '' : ''}
+                        {course ? course.durationInMinutes ? course.durationInMinutes + ' min' : '' : ''}
                     </div>
                 )
             }
@@ -282,7 +294,11 @@ function Schedule() {
             getScheduleByDate(gradeMin, gradeMax, localStorage.getItem('toStart'), localStorage.getItem('toEnd'), tableProps.pageIndex, tableProps.pageSize, sortingName, sortingType).then(data => {
                 if (data) {
                     if (data.content) {
-                        console.log(data.content)
+
+                        data.content = data.content.sort(function (a, b) {
+                            var dateA = new Date(a.createDate), dateB = new Date(b.createDate);
+                            return dateB - dateA;
+                        });
                         setSchedules([])
                         setSchedules([...new Map(data.content.map(item => [item['id'], item])).values()]);
                         setTableProps({
@@ -313,6 +329,12 @@ function Schedule() {
             findScheduleByGrade(gradeMin, gradeMax, localStorage.getItem('toStart'), localStorage.getItem('toEnd'), tableProps.pageIndex, tableProps.pageSize, sortingName, sortingType).then(data => {
                 if (data) {
                     if (data.content) {
+
+                        data.content = data.content.sort(function(a, b) {
+                            var dateA = new Date(a.createDate), dateB = new Date(b.createDate);
+                            return dateB - dateA;
+                        });
+
                         setSchedules([...new Map(data.content.map(item => [item['id'], item])).values()])
                         setTableProps({
                             ...tableProps,

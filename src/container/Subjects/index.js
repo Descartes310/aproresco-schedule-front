@@ -127,6 +127,10 @@ export default function SubjectsList() {
         getSubjects(tableProps.pageIndex, tableProps.pageSize, sortingName, sortingType, name).then(data => {
             if (data) {
                 if (data.content) {
+                    data.content = data.content.sort(function(a, b) {
+                        var dateA = new Date(a.createDate), dateB = new Date(b.createDate);
+                        return dateB - dateA;
+                    });
                     setSubjectList([...new Map(data.content.map(item => [item['id'], item])).values()])
                     setTableProps({
                         ...tableProps,
