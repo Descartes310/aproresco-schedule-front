@@ -67,10 +67,14 @@ function CreateSchedule() {
 
         setSubmitting(true)
 
-        let date = new Date(startDate);
-        let d = (date.getMonth() + 1).toString().padStart(2, '0') + '/' + date.getDate().toString().padStart(2, '0') + '/' + date.getFullYear();
-        let fdate = new Date(endDate);
-        let f = (fdate.getMonth() + 1).toString().padStart(2, '0') + '/' + fdate.getDate().toString().padStart(2, '0') + '/' + fdate.getFullYear();
+        // console.log(startDate);
+        // let date = new Date(startDate);
+        // let d = (date.getMonth() + 1).toString().padStart(2, '0') + '/' + date.getDate().toString().padStart(2, '0') + '/' + date.getFullYear();
+        let d = startDate.split('-')[1] + '/' + startDate.split('-')[2] + '/' + startDate.split('-')[0];
+        
+        // console.log(endDate);
+        // let fdate = new Date(endDate);
+        let f = endDate.split('-')[1] + '/' + endDate.split('-')[2] + '/' + endDate.split('-')[0];
 
         let data = {
             course: courses.find(c => c.id === courseId),
