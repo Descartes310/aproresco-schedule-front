@@ -59,22 +59,25 @@ function StudentListOfTeacher(props) {
     const getTeacherById = (id) => {
         getTeacherProfileById(id).then(data => {
             setTeacherProfile(data);
+            data.subjects.map(s => {
+                getSubject(s.id);
+                return null;
+            })
         });
     }
 
     useEffect(() => {
-        getAvailabilityById();
+        if (profile)
+            getTeacherById(props.match.params.id)
+        else
+            getAvailabilityById();
     }, []);
 
     useEffect(() => {
-        if (teacherProfile) {
+        if (teacherProfile && !profile) {
             setAssistants(teacher.assistants ? teacher.assistants : []);
             let sd = teacher.createDate;
             let date = (new Date(sd)).toLocaleDateString();
-            teacherProfile.subjects.map(s => {
-                getSubject(s.id);
-                return null;
-            })
             setPresent(teacher.effectiveStartDate ? false : true);
             //setEffectiveStartDate(teacher.effectiveStartDate);
             setEffectiveStartDate(date);
@@ -543,7 +546,7 @@ function StudentListOfTeacher(props) {
                     ghost={false}
                     title={
                         <div style={{ display: "flex", flexDirection: 'row', alignItems: "center", justifyContent: "center" }}>
-                            <p style={{ fontSize: '3em', textAlign: 'center', margin: '20px', marginBottom: '20px' }}>{`${teacher.teacherProfile.firstName} ${teacher.teacherProfile.lastName}`}</p>
+                            <p style={{ fontSize: '3em', textAlign: 'center', margin: '20px', marginBottom: '20px' }}>{`${teacherProfile.firstName} ${teacherProfile.lastName}`}</p>
                             <Tooltip title={admin ? "Administrator" : "Not An Administrator"}>
                                 <FontAwesomeIcon onClick={() => markTeacherAsAdmin()} icon={faCrown} color={admin ? "gold" : "gray"} size={"2x"} style={{ marginLeft: 20 }} />
                             </Tooltip>
@@ -559,25 +562,29 @@ function StudentListOfTeacher(props) {
                         <div style={{ display: 'flex' }}>
                             <Button key='1' type="primary"
                                 style={{ display: 'flex' }}
-                                onClick={(e) => { e.stopPropagation(); teacher.schedule ? history.push(`/teacherlist/${teacher.id}/update`, { teacher: teacher }) : history.push(`/teacherprofiles/${teacher.id}/update`, { teacher: { ...teacher, ...teacher.teacherProfile } }) }}
+                                onClick={(e) => { e.stopPropagation(); !profile ? history.push(`/teacherlist/${teacher.id}/update`, { teacher: teacher }) : history.push(`/teacherprofiles/${teacherProfile.id}/update`, { teacher: { ...teacher, ...teacherProfile } }) }}
                             >
                                 Edit
                             </Button>
-                            <Button key='2' type="primary"
-                                style={{ display: 'none' }}
-                                onClick={() => markAsPresent()}
-                            >
-                                {present ? 'MARK AS PRESENT' : 'MARK AS ABSENT'}
-                            </Button>
-                            <Button key='3' type="primary"
-                                style={{ display: !assigningStatus ? 'block' : 'none', marginLeft: '20px' }}
-                                disabled={(assignStudentList.length > 0 && active) || selectedRow.length > 0 ? false : true}
-                                onClick={() => {
-                                    assignStudent()
-                                }}
-                            >
-                                {active ? 'ASSIGN STUDENTS' : 'UNASSIGN STUDENTS'}
-                            </Button>
+                            {!profile && (
+                                <>
+                                    <Button key='2' type="primary"
+                                        style={{ display: 'none' }}
+                                        onClick={() => markAsPresent()}
+                                    >
+                                        {present ? 'MARK AS PRESENT' : 'MARK AS ABSENT'}
+                                    </Button>
+                                    <Button key='3' type="primary"
+                                        style={{ display: !assigningStatus ? 'block' : 'none', marginLeft: '20px' }}
+                                        disabled={(assignStudentList.length > 0 && active) || selectedRow.length > 0 ? false : true}
+                                        onClick={() => {
+                                            assignStudent()
+                                        }}
+                                    >
+                                        {active ? 'ASSIGN STUDENTS' : 'UNASSIGN STUDENTS'}
+                                    </Button>
+                                </>
+                            )}
                         </div>
                     ]}
                 >
@@ -589,7 +596,7 @@ function StudentListOfTeacher(props) {
                                     <h4>Name</h4>
                                 </Col>
                                 <Col className="gutter-row" span={14}>
-                                    <h4>{`${teacher.teacherProfile.firstName} ${teacher.teacherProfile.lastName}`}</h4>
+                                    <h4>{`${teacherProfile.firstName} ${teacherProfile.lastName}`}</h4>
                                 </Col>
                             </Row>
                             <Row gutter={16}>
@@ -597,7 +604,7 @@ function StudentListOfTeacher(props) {
                                     <h4 >Email</h4>
                                 </Col>
                                 <Col className="gutter-row" span={14}>
-                                    <h4>{`${teacher.teacherProfile.email ? teacher.teacherProfile.email : ''}`}</h4>
+                                    <h4>{`${teacherProfile.email ? teacherProfile.email : ''}`}</h4>
                                 </Col>
                             </Row>
                             {/* <Row gutter={16}>
@@ -605,7 +612,7 @@ function StudentListOfTeacher(props) {
                                 <h4 >Internal Email</h4>
                             </Col>
                             <Col className="gutter-row" span={14}>
-                                <h4>{`${teacher.teacherProfile.internalEmail}`}</h4>
+                                <h4>{`${teacherProfile.internalEmail}`}</h4>
                             </Col>
                         </Row> */}
                             <Row gutter={16}>
@@ -614,9 +621,9 @@ function StudentListOfTeacher(props) {
                                 </Col>
                                 <Col className="gutter-row" span={14}>
                                     <p onClick={(e) => {
-                                        window.open(teacher.teacherProfile.conferenceUrl ? teacher.teacherProfile.conferenceUrl.includes('http') ? teacher.teacherProfile.conferenceUrl : 'http://' + teacher.teacherProfile.conferenceUrl : '')
-                                        // window.open(teacher.conferenceUrl ? teacher.conferenceUrl.includes('http') ? teacher.conferenceUrl : 'http://' + teacher.conferenceUrl : teacher.teacherProfile.conferenceUrl ? teacher.teacherProfile.conferenceUrl.includes('http') ? teacher.teacherProfile.conferenceUrl : 'http://' + teacher.teacherProfile.conferenceUrl : '')
-                                    }}>{`${teacher.teacherProfile.conferenceUrl}`}</p>
+                                        window.open(teacherProfile.conferenceUrl ? teacherProfile.conferenceUrl.includes('http') ? teacherProfile.conferenceUrl : 'http://' + teacherProfile.conferenceUrl : '')
+                                        // window.open(teacher.conferenceUrl ? teacher.conferenceUrl.includes('http') ? teacher.conferenceUrl : 'http://' + teacher.conferenceUrl : teacherProfile.conferenceUrl ? teacherProfile.conferenceUrl.includes('http') ? teacherProfile.conferenceUrl : 'http://' + teacherProfile.conferenceUrl : '')
+                                    }}>{`${teacherProfile.conferenceUrl}`}</p>
                                 </Col>
                             </Row>
                             <Row gutter={16}>
@@ -632,86 +639,90 @@ function StudentListOfTeacher(props) {
                                     <h4>Grades</h4>
                                 </Col>
                                 <Col className="gutter-row" span={14}>
-                                    <h4>{teacher.teacherProfile.grades ? teacher.teacherProfile.grades.join(', ') : 'No Grades'}</h4>
+                                    <h4>{teacherProfile.grades ? teacherProfile.grades.join(', ') : 'No Grades'}</h4>
                                 </Col>
                             </Row>
                         </Card>
 
-                        <Card title="Availability" hoverable={true} bordered={true} style={{ width: "48%", marginLeft: '2%' }}>
-                            <Row gutter={16}>
-                                <Col className="gutter-row" span={8}>
-                                    <h4>Start Date</h4>
-                                </Col>
-                                <Col className="gutter-row" span={14}>
-                                    <h4>
-                                        <Moment local format="D MMM YYYY HH:MM" withTitle>
-                                            {teacher.schedule && teacher.schedule.startDate}
-                                        </Moment>
-                                    </h4>
-                                </Col>
-                            </Row>
-                            <Row gutter={16}>
-                                <Col className="gutter-row" span={8}>
-                                    <h4>Effective Start Date</h4>
-                                </Col>
-                                <Col className="gutter-row" span={14}>
-                                    <h4>
-                                        <Moment local format="D MMM YYYY HH:MM" withTitle>
-                                            {teacher.schedule && teacher.schedule.startDate}
-                                        </Moment>
-                                    </h4>
-                                </Col>
-                            </Row>
-                            <Row gutter={16}>
-                                <Col className="gutter-row" span={8}>
-                                    <h4>Conference URL</h4>
-                                </Col>
-                                <Col className="gutter-row" span={14} onDoubleClick={() => setEditable(!editable)}>
-                                    {!editable ?
-                                        <p onClick={(e) => {
-                                            window.open(teacher.conferenceUrl ? teacher.conferenceUrl.includes('http') ? teacher.conferenceUrl : 'http://' + teacher.conferenceUrl : '')
-                                        }} >{confUrl}</p> :
-                                        <Form layout="inline">
-                                            <Form.Item>
-                                                <Input
-                                                    type="text"
-                                                    placeholder="Conference Url"
-                                                    name="url"
-                                                    value={confUrl}
-                                                    onChange={setConferenceUrl}
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === 'Enter') {
-                                                            setEditable(false);
-                                                        }
-                                                    }}
-                                                />
-                                            </Form.Item>
-                                        </Form>
-                                    }
-                                </Col>
-                            </Row>
-                            <Row gutter={16}>
-                                <Col className="gutter-row" span={8}>
-                                    <h4>Students</h4>
-                                </Col>
-                                <Col className="gutter-row" span={14}>
-                                    <h4>{teacher.studentCount}</h4>
-                                </Col>
-                            </Row>
-                        </Card>
+                        {!profile && (
+                            <Card title="Availability" hoverable={true} bordered={true} style={{ width: "48%", marginLeft: '2%' }}>
+                                <Row gutter={16}>
+                                    <Col className="gutter-row" span={8}>
+                                        <h4>Start Date</h4>
+                                    </Col>
+                                    <Col className="gutter-row" span={14}>
+                                        <h4>
+                                            <Moment local format="D MMM YYYY HH:MM" withTitle>
+                                                {teacher.schedule && teacher.schedule.startDate}
+                                            </Moment>
+                                        </h4>
+                                    </Col>
+                                </Row>
+                                <Row gutter={16}>
+                                    <Col className="gutter-row" span={8}>
+                                        <h4>Effective Start Date</h4>
+                                    </Col>
+                                    <Col className="gutter-row" span={14}>
+                                        <h4>
+                                            <Moment local format="D MMM YYYY HH:MM" withTitle>
+                                                {teacher.schedule && teacher.schedule.startDate}
+                                            </Moment>
+                                        </h4>
+                                    </Col>
+                                </Row>
+                                <Row gutter={16}>
+                                    <Col className="gutter-row" span={8}>
+                                        <h4>Conference URL</h4>
+                                    </Col>
+                                    <Col className="gutter-row" span={14} onDoubleClick={() => setEditable(!editable)}>
+                                        {!editable ?
+                                            <p onClick={(e) => {
+                                                window.open(teacher.conferenceUrl ? teacher.conferenceUrl.includes('http') ? teacher.conferenceUrl : 'http://' + teacher.conferenceUrl : '')
+                                            }} >{confUrl}</p> :
+                                            <Form layout="inline">
+                                                <Form.Item>
+                                                    <Input
+                                                        type="text"
+                                                        placeholder="Conference Url"
+                                                        name="url"
+                                                        value={confUrl}
+                                                        onChange={setConferenceUrl}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') {
+                                                                setEditable(false);
+                                                            }
+                                                        }}
+                                                    />
+                                                </Form.Item>
+                                            </Form>
+                                        }
+                                    </Col>
+                                </Row>
+                                <Row gutter={16}>
+                                    <Col className="gutter-row" span={8}>
+                                        <h4>Students</h4>
+                                    </Col>
+                                    <Col className="gutter-row" span={14}>
+                                        <h4>{teacher.studentCount}</h4>
+                                    </Col>
+                                </Row>
+                            </Card>
+                        )}
                     </Row>
 
-                    {!studentList || !students ? <Spin /> :
-                        <>
-                            <h2>Students </h2>
-                            <Table
-                                columns={columns}
-                                dataSource={students}
-                                rowSelection={rowSelection}
-                                rowKey="id"
-                            />
-                        </>
-                    }
+                    {
+                        !profile && (
+                            !studentList || !students ? <Spin /> :
+                                <>
+                                    <h2>Students </h2>
+                                    <Table
+                                        columns={columns}
+                                        dataSource={students}
+                                        rowSelection={rowSelection}
+                                        rowKey="id"
+                                    />
+                                </>
+                        )}
 
                     {!isAddingAssistants && !profile && (
                         <div style={{ marginTop: 40 }}>
