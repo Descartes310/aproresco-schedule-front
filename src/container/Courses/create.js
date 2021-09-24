@@ -2,12 +2,14 @@ import 'antd/dist/antd.css';
 import { useHistory } from 'react-router-dom';
 import '../../Assets/container/StudentList.css';
 import React, { useEffect, useState } from 'react';
+import countries from '../../Assets/countries.json'
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import { PageHeader, Form, Input, Button, Select } from 'antd';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { getSubjects } from '../../services/Teacher';
 import { createCourse } from '../../services/Course';
+import { getCountry } from '../../services/Student';
 
 function CreateCourse() {
 
@@ -27,10 +29,14 @@ function CreateCourse() {
     const [openGrades, setOpenGrades] = useState(false);
     const [subjectId, setSubjectId] = useState(null);
     const [duration, setDuration] = useState(0);
-
+    const [openLanguage, setOpenLanguage] = useState(false);
+    const [openCurrency, setOpenCurrency] = useState(false);
 
     useEffect(() => {
         getAllSubjects();
+        getCountry().then(data => {
+            setCurrency(countries.data.find(c => c.countryCode == data.countryCode) ? countries.data.find(c => c.countryCode == data.countryCode).currencyCode : '')
+        });
     }, []);
 
     const getAllSubjects = () => {
@@ -42,6 +48,14 @@ function CreateCourse() {
                 }
             }
         }).finally(() => setLoading(false))
+    }
+
+    const handleChangeLanguage = lang => {
+        setLanguage(lang)
+    }
+
+    const handleChangeCurrency = curr => {
+        setCurrency(curr)
     }
 
     const handleSubmit = () => {
@@ -68,8 +82,6 @@ function CreateCourse() {
                 currencyCode: currency
             }],
         }
-
-        console.log(data)
 
         createCourse(data).then(result => {
             history.push(`/courses`)
@@ -109,8 +121,21 @@ function CreateCourse() {
                         <Form.Item label="Name" required style={{ flex: 1, marginRight: '10px' }}>
                             <Input type="text" name="name" value={name} onChange={(e) => setName(e.target.value)} />
                         </Form.Item>
-                        <Form.Item label="Language" required style={{ flex: 1, marginRight: '10px' }}>
-                            <Input type="text" name="language" value={language} onChange={(e) => setLanguage(e.target.value)} />
+                        <Form.Item label="Language" required style={{ flex: 1, marginRight: '10px' }}
+                            onClick={() => setOpenLanguage(!openLanguage)}>
+                            <Select
+                                open={openLanguage}
+                                defaultValue={language}
+                                onFocus={() => setOpenLanguage(true)}
+                                onBlur={() => setOpenLanguage(false)}
+                                style={{ width: '100%' }}
+                                onSelect={() => setOpenLanguage(false)}
+                                placeholder="Please select language"
+                                onChange={handleChangeLanguage}
+                            >
+                                <Select.Option value={'EN'}>English</Select.Option>
+                                <Select.Option value={'FR'}>French</Select.Option>
+                            </Select>
                         </Form.Item>
                     </div>
                     <div style={{
@@ -200,8 +225,23 @@ function CreateCourse() {
                         <Form.Item label="Price" required style={{ flex: 1, marginRight: '10px' }}>
                             <Input type="number" name="price" value={price} onChange={(e) => setPrice(e.target.value)} />
                         </Form.Item>
-                        <Form.Item label="Currency" required style={{ flex: 1, marginRight: '10px' }}>
-                            <Input type="text" name="currency" value={currency} onChange={(e) => setCurrency(e.target.value)} />
+                        <Form.Item label="Currency" required style={{ flex: 1, marginRight: '10px' }}
+                            onClick={() => setOpenCurrency(!openCurrency)}>
+                            <Select
+                                open={openCurrency}
+                                value={currency}
+                                onFocus={() => setOpenCurrency(true)}
+                                onBlur={() => setOpenCurrency(false)}
+                                style={{ width: '100%' }}
+                                onSelect={() => setOpenCurrency(false)}
+                                placeholder="Please select currency"
+                                onChange={handleChangeCurrency}
+                            >
+                                <Select.Option value={''}></Select.Option>
+                                {countries.data.map((c, key) => (
+                                    <Select.Option key={key} value={c.currencyCode}>{c.currencyCode}</Select.Option>
+                                ))}
+                            </Select>
                         </Form.Item>
                     </div>
 

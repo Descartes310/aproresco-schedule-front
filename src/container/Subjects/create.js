@@ -1,8 +1,8 @@
 import 'antd/dist/antd.css';
 import { useHistory } from 'react-router-dom';
-import { createSubject } from '../../services/Course';
 import React, { useState, useReducer } from 'react';
-import { PageHeader, Form, Input, Button } from 'antd';
+import { createSubject } from '../../services/Course';
+import { PageHeader, Form, Input, Button, Select } from 'antd';
 
 const formReducer = (state, event) => {
     return {
@@ -18,6 +18,8 @@ const CreateSubject = () => {
     const [formData, setFormData] = useReducer(formReducer, {});
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
+    const [openLanguage, setOpenLanguage] = useState(false);
+    const [language, setLanguage] = useState('EN');
 
     const handleChange = event => {
         setFormData({
@@ -26,9 +28,13 @@ const CreateSubject = () => {
         });
     }
 
+    const handleChangeSelect = lang => {
+        setLanguage(lang)
+    }
+
     const handleSubmit = () => {
-        if (formData.name && formData.language) {
-            if (formData.name.toString().length <= 0 || formData.language.toString().length <= 0) {
+        if (formData.name && language) {
+            if (formData.name.toString().length <= 0 || language.toString().length <= 0) {
                 alert("Please, fill the name and language!");
                 return
             }
@@ -40,9 +46,9 @@ const CreateSubject = () => {
 
         let data = {
             name: formData.name,
-            language: formData.language
+            language: language
         }
-        
+
         createSubject(data).then(result => {
             history.push(`/subjects`)
         }).finally(() => setSubmitting(false));
@@ -81,8 +87,21 @@ const CreateSubject = () => {
                         display: 'flex',
                         flexDirection: 'row'
                     }}>
-                        <Form.Item label="Language" style={{ flex: 1, marginRight: '40px' }}>
-                            <Input type="language" name="language" onChange={handleChange} />
+                        <Form.Item label="Language" required style={{ flex: 1, marginRight: '10px' }}
+                            onClick={() => setOpenLanguage(!openLanguage)}>
+                            <Select
+                                open={openLanguage}
+                                defaultValue={language}
+                                onFocus={() => setOpenLanguage(true)}
+                                onBlur={() => setOpenLanguage(false)}
+                                style={{ width: '100%' }}
+                                onSelect={() => setOpenLanguage(false)}
+                                placeholder="Please select language"
+                                onChange={handleChangeSelect}
+                            >
+                                <Select.Option value={'EN'}>English</Select.Option>
+                                <Select.Option value={'FR'}>French</Select.Option>
+                            </Select>
                         </Form.Item>
                     </div>
                     <Form.Item style={{ flex: 1, marginRight: '40px', marginTop: '20px' }}>

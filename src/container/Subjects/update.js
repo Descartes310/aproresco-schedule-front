@@ -1,8 +1,8 @@
 import 'antd/dist/antd.css';
 import React, { useState, useEffect } from 'react';
 import { updateSubject } from '../../services/Course';
-import { PageHeader, Form, Input, Button } from 'antd';
 import { useHistory, useLocation } from 'react-router-dom';
+import { PageHeader, Form, Input, Button, Select } from 'antd';
 
 const UpdateSubject = () => {
 
@@ -12,13 +12,18 @@ const UpdateSubject = () => {
     const [form] = Form.useForm();
     const [name, setName] = useState('');
     const [language, setLanguage] = useState('');
-    const [submitting, setSubmitting] = useState(false);
     const [subject] = useState(location.state.subject);
+    const [submitting, setSubmitting] = useState(false);
+    const [openLanguage, setOpenLanguage] = useState(false);
 
     useEffect(() => {
         setName(subject.name);
         setLanguage(subject.language);
     }, [subject])
+
+    const handleChangeSelect = lang => {
+        setLanguage(lang)
+    }
 
     const handleSubmit = () => {
         if (name && language) {
@@ -36,7 +41,7 @@ const UpdateSubject = () => {
             name: name,
             language: language
         }
-        
+
         updateSubject(subject.id, data).then(result => {
             history.push(`/subjects`)
         }).finally(() => setSubmitting(false));
@@ -68,15 +73,28 @@ const UpdateSubject = () => {
                         flexDirection: 'row'
                     }}>
                         <Form.Item label="Name" required style={{ flex: 1, marginRight: '40px' }}>
-                            <Input type="text" name="name" value={name} onChange={e => setName(e.target.value)}/>
+                            <Input type="text" name="name" value={name} onChange={e => setName(e.target.value)} />
                         </Form.Item>
                     </div>
                     <div style={{
                         display: 'flex',
                         flexDirection: 'row'
                     }}>
-                        <Form.Item label="Language" style={{ flex: 1, marginRight: '40px' }}>
-                            <Input type="language" name="language" value={language} onChange={e => setLanguage(e.target.value)}/>
+                        <Form.Item label="Language" required style={{ flex: 1, marginRight: '10px' }}
+                            onClick={() => setOpenLanguage(!openLanguage)}>
+                            <Select
+                                open={openLanguage}
+                                value={language}
+                                onFocus={() => setOpenLanguage(true)}
+                                onBlur={() => setOpenLanguage(false)}
+                                style={{ width: '100%' }}
+                                onSelect={() => setOpenLanguage(false)}
+                                placeholder="Please select language"
+                                onChange={handleChangeSelect}
+                            >
+                                <Select.Option value={'EN'}>English</Select.Option>
+                                <Select.Option value={'FR'}>French</Select.Option>
+                            </Select>
                         </Form.Item>
                     </div>
                     <Form.Item style={{ flex: 1, marginRight: '40px', marginTop: '20px' }}>
