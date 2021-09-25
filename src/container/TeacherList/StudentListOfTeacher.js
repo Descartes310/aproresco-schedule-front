@@ -13,7 +13,7 @@ import { assignStudents } from '../../Action-Reducer/Student/action';
 import { Table, PageHeader, Button, Spin, Tooltip } from 'antd';
 import { faCrown, faShieldAlt, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 import { assignStudentToAnotherTeacher, assignMeetingToAnotherTeacher, findTeacherProfileByFirstNameAndLastName, unAssignStudentToAnotherTeacher, getStudentListByDate } from '../../services/Student';
-import { markTeacherAsPresent, markAsSupervisor, getTeacherProfileById, getTeacherAvailabilityById, markAsAdmin, markAsApproved, updateAvailabilityAssistants, getSubjectById, getAvailabilityBookings, removeAvailabilityAssistants } from '../../services/Teacher';
+import { markTeacherAsPresent, markAsSupervisor, getTeacherProfileById, getTeacherAvailabilityById, markAsAdmin, markAsApproved, updateAvailabilityAssistants, getSubjectById, getAvailabilityBookings, removeAvailabilityAssistants, getSubjects } from '../../services/Teacher';
 
 function StudentListOfTeacher(props) {
 
@@ -36,7 +36,7 @@ function StudentListOfTeacher(props) {
     const [open, setOpen] = useState(false);
     const [present, setPresent] = useState(true);
     const [profileLoading, setProfileLoading] = useState(true)
-    const [startDate, setStartDate] = useState('');
+    const [allSubjects, setAllSubjects] = useState([]);
     const [effectiveStartDate, setEffectiveStartDate] = useState('');
     const [selectedRow, setSelectedRow] = useState([]);
     const assignStudentList = useSelector((state) => {
@@ -59,18 +59,25 @@ function StudentListOfTeacher(props) {
     const getTeacherById = (id) => {
         getTeacherProfileById(id).then(data => {
             setTeacherProfile(data);
-            data.subjects.map(s => {
-                getSubject(s.id);
-                return null;
-            })
         });
     }
 
+    const getAllSubjects = () => {
+        getSubjects(0, 1000, 'name', 'asc', '').then(data => {
+            if (data) {
+                if (data.content) {
+                    setAllSubjects(data.content)
+                }
+            }
+            if (profile)
+                getTeacherById(props.match.params.id)
+            else
+                getAvailabilityById();
+        })
+    }
+
     useEffect(() => {
-        if (profile)
-            getTeacherById(props.match.params.id)
-        else
-            getAvailabilityById();
+        getAllSubjects();
     }, []);
 
     useEffect(() => {
@@ -83,6 +90,12 @@ function StudentListOfTeacher(props) {
             setEffectiveStartDate(date);
             getListView();
             getListProfiles();
+        } else {
+            if (teacherProfile) {
+                if (teacherProfile.subjects) {
+                    setSubjects(allSubjects.filter(s => teacherProfile.subjects.map(su => su.id).includes(s.id)).map(s => s.name));
+                }
+            }
         }
     }, [teacherProfile])
 
@@ -518,12 +531,6 @@ function StudentListOfTeacher(props) {
     const markTeacherAsAdmin = () => {
         markAsAdmin(teacher.teacherProfile.id, !admin).then(data => {
             setAdmin(!admin);
-        });
-    }
-
-    const getSubject = (id) => {
-        getSubjectById(id).then(data => {
-            setSubjects([...subjects, data.name]);
         });
     }
 

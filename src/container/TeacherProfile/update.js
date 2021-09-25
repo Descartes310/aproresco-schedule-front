@@ -7,7 +7,7 @@ import "react-phone-input-2/lib/bootstrap.css";
 import '../../Assets/container/StudentList.css';
 import React, { useEffect, useState, useReducer } from 'react';
 import { PageHeader, Form, Input, Button, Select } from 'antd';
-import { updateTeacher, getSubjects} from '../../services/Teacher';
+import { updateTeacher, getSubjects } from '../../services/Teacher';
 import { getCountry, getTags } from '../../services/Student';
 
 const formReducer = (state, event) => {
@@ -56,12 +56,14 @@ function CreateTeacher() {
             formData.schoolName = teacher.schoolName;
             formData.schoolBoard = teacher.schoolBoard;
             formData.iemail = teacher.email;
-            setGrades(teacher.grades)
-            setSubjects(teacher.subjects.map(s => s.id))
+            if (teacher.grades)
+                setGrades(teacher.grades)
+            if (teacher.subjects)
+                setSubjects(teacher.subjects.map(s => s.id))
             setPhone(teacher.phoneNumber)
         })
-        if(teacher.tags){
-            teacher.tags.map(tag=> defaulttags.push(tag.name))
+        if (teacher.tags) {
+            teacher.tags.map(tag => defaulttags.push(tag.name))
         }
         getEnabledTags();
     }, []);
@@ -77,7 +79,7 @@ function CreateTeacher() {
         }).finally(() => setLoading(false))
     }
 
-    const handleChangeTags = (value) =>{
+    const handleChangeTags = (value) => {
         setTags(value);
     }
 
@@ -103,26 +105,24 @@ function CreateTeacher() {
     }
 
     const handleSubmit = () => {
-        if (formData.firstName && formData.lastName && formData.iemail && formData.schoolName && formData.schoolBoard && phone) {
+        if (formData.firstName && formData.lastName && formData.iemail && phone) {
             if (formData.firstName.toString().length <= 0
                 || formData.lastName.toString().length <= 0
-                || formData.schoolName.toString().length <= 0
-                || formData.schoolBoard.toString().length <= 0
                 || phone.toString().length <= 0
                 || formData.iemail.toString().length <= 0
             ) {
-                alert("Please, fill the form 1!");
+                alert("Please, fill the form !");
                 return
             }
         } else {
-            alert("Please, fill the form 2!");
+            alert("Please, fill the form !");
             return
         }
 
         setSubmitting(true);
 
-        let tgs=[]
-        tags.map(res => tgs.push({"id": res}))
+        let tgs = []
+        tags.map(res => tgs.push({ "id": res }))
 
         updateTeacher(teacher.id, formData.firstName, formData.lastName, formData.iemail, grades, subjects.map(sid => { return sid }), phone, formData.schoolName, formData.schoolBoard, tgs.filter(t => t.id !== 0)).then(data => {
             history.push(`/teacherprofiles`);
@@ -154,10 +154,10 @@ function CreateTeacher() {
                         flexDirection: 'row'
                     }}>
                         <Form.Item label="Fist Name" required style={{ flex: 1, marginRight: '10px' }}>
-                            <Input type="text" name="firstName" onChange={handleChange} defaultValue={ teacher.firstName }/>
+                            <Input type="text" name="firstName" onChange={handleChange} defaultValue={teacher.firstName} />
                         </Form.Item>
                         <Form.Item label="Last Name" required style={{ flex: 1, marginLeft: '10px' }}>
-                            <Input type="text" name="lastName" onChange={handleChange} defaultValue={ teacher.lastName }/>
+                            <Input type="text" name="lastName" onChange={handleChange} defaultValue={teacher.lastName} />
                         </Form.Item>
                     </div>
                     <div style={{
@@ -165,7 +165,7 @@ function CreateTeacher() {
                         flexDirection: 'row'
                     }}>
                         <Form.Item label="Email" required style={{ flex: 1, marginRight: '10px' }}>
-                            <Input type="email" name="iemail" onChange={handleChange}  defaultValue={ teacher.email }/>
+                            <Input type="email" name="iemail" onChange={handleChange} defaultValue={teacher.email} />
                         </Form.Item>
                         <Form.Item label="Phone Number" required style={{ flex: 1, marginLeft: '10px' }}>
                             <PhoneInput
@@ -200,8 +200,8 @@ function CreateTeacher() {
                             <Select
                                 mode="multiple"
                                 allowClear
-                                open={open} 
-                                defaultValue={ teacher.grades }
+                                open={open}
+                                defaultValue={teacher.grades}
                                 onFocus={() => setOpen(true)}
                                 onBlur={() => setOpen(false)}
                                 style={{ width: '100%' }}
@@ -230,8 +230,8 @@ function CreateTeacher() {
                                 <Form.Item label="Subjects" required style={{ flex: 1, marginLeft: '10px' }} onClick={() => setOpen2(open2 ? false : true)}>
                                     <Select mode="multiple"
                                         allowClear
-                                        open={open2} 
-                                        defaultValue={ teacher.subjects ? teacher.subjects.map(s => s.id) : [] }
+                                        open={open2}
+                                        defaultValue={teacher.subjects ? teacher.subjects.map(s => s.id) : []}
                                         onFocus={() => setOpen2(true)}
                                         onBlur={() => setOpen2(false)}
                                         style={{ width: '100%' }}
@@ -251,36 +251,36 @@ function CreateTeacher() {
                     </div>
 
                     {
-                    !tagsList ? 
-                    (<></>)
-                    :
-                    (<div style={{
-                        display: 'flex',
-                        flexDirection: 'row'
-                    }}>
-                        <Form.Item label="Tags" required style={{ flex: 1, marginRight: '10px'}} onClick={() => setOpen1(open1 ? false : true)}>
-                            <Select mode="multiple"
-                                allowClear
-                                defaultValue={defaulttags}
-                                loading={loading}
-                                open={open1}
-                                onFocus={() => setOpen1(true)}
-                                onBlur={() => setOpen1(false)}
-                                style={{ width: '100%' }}
-                                onSelect={() => setOpen1(false)}
-                                placeholder="Please select tags"
-                                onChange={handleChangeTags}>
-                                <Select.Option value={0} key={0}>No tag</Select.Option>
-                                {
-                                    tagsList.map(tag => {
-                                        return (
-                                            <Select.Option value={tag.id} key={tag.id}>{tag.name}</Select.Option>
-                                        )
-                                    })
-                                }
-                            </Select>
-                        </Form.Item>
-                    </div>)
+                        !tagsList ?
+                            (<></>)
+                            :
+                            (<div style={{
+                                display: 'flex',
+                                flexDirection: 'row'
+                            }}>
+                                <Form.Item label="Tags" required style={{ flex: 1, marginRight: '10px' }} onClick={() => setOpen1(open1 ? false : true)}>
+                                    <Select mode="multiple"
+                                        allowClear
+                                        defaultValue={defaulttags}
+                                        loading={loading}
+                                        open={open1}
+                                        onFocus={() => setOpen1(true)}
+                                        onBlur={() => setOpen1(false)}
+                                        style={{ width: '100%' }}
+                                        onSelect={() => setOpen1(false)}
+                                        placeholder="Please select tags"
+                                        onChange={handleChangeTags}>
+                                        <Select.Option value={0} key={0}>No tag</Select.Option>
+                                        {
+                                            tagsList.map(tag => {
+                                                return (
+                                                    <Select.Option value={tag.id} key={tag.id}>{tag.name}</Select.Option>
+                                                )
+                                            })
+                                        }
+                                    </Select>
+                                </Form.Item>
+                            </div>)
                     }
 
                     <div style={{
@@ -288,10 +288,10 @@ function CreateTeacher() {
                         flexDirection: 'row'
                     }}>
                         <Form.Item label="School Name" required style={{ flex: 1, marginRight: '10px' }}>
-                            <Input type="text" name="schoolName" onChange={handleChange} defaultValue={ teacher.schoolName }/>
+                            <Input type="text" name="schoolName" onChange={handleChange} defaultValue={teacher.schoolName} />
                         </Form.Item>
                         <Form.Item label="School Board" required style={{ flex: 1, marginLeft: '10px' }}>
-                            <Input type="text" name="schoolBoard" onChange={handleChange} defaultValue={ teacher.schoolBoard }/>
+                            <Input type="text" name="schoolBoard" onChange={handleChange} defaultValue={teacher.schoolBoard} />
                         </Form.Item>
                     </div>
                     <Form.Item>

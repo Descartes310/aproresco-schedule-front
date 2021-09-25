@@ -10,7 +10,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { assignStudents } from '../../Action-Reducer/Student/action'
 import SearchFilter from '../../components/StudentList/SearchFilter'
 import { Table, PageHeader, Button, Spin, Popconfirm, Form, Input, Tooltip, Typography } from 'antd';
-import { findTeacherListByFirstNameAndLastName, getTeacherListByDate, sendMessageAvailability, getTeacherProfileById } from '../../services/Teacher'
+import { findTeacherListByFirstNameAndLastName, getTeacherListByDate, sendMessageAvailability, getTeacherProfileById, getSubjects } from '../../services/Teacher'
 import { assignStudentToAnotherTeacher, findStudentListByFirstNameAndLastName, getStudentListByDate, editSubjectGrade, deleteAvailabilities } from '../../services/Student'
 import { VerticalAlignBottomOutlined, VerticalAlignTopOutlined, VideoCameraOutlined, MessageOutlined, PlusOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons"
 
@@ -43,6 +43,7 @@ function TeacherList() {
     const [studentList, setStudentList] = useState();
     const [sortingType, setSortingType] = useState("desc");
     const [selectedRow, setSelectedRow] = useState([]);
+    const [allSubjects, setAllSubjects] = useState([]);
 
     const [sortingNameStudent, setSortingNameStudent] = useState("firstName");
     const [sortingTypeStudent, setSortingTypeStudent] = useState("desc");
@@ -124,6 +125,16 @@ function TeacherList() {
         }
     };
 
+    const getAllSubjects = () => {
+        getSubjects(0, 1000, 'name', 'asc', '').then(data => {
+            if (data) {
+                if (data.content) {
+                    setAllSubjects(data.content)
+                }
+            }
+        })
+    }
+
     const deleteRows = () => {
         let ids = [];
         selectedRow.forEach(r => ids.push(r.id));
@@ -132,6 +143,10 @@ function TeacherList() {
             setSelectedRow([]);
         })
     }
+
+    useEffect(() => {
+        getAllSubjects()
+    }, []);
 
     useEffect(() => {
         getListView();
@@ -372,6 +387,7 @@ function TeacherList() {
             key: 'subjects',
             render: (record) => {
                 let teacherProfile = teacherProfiles.find(p => p.id === record.teacherProfile.id);
+                console.log(teacherProfile)
                 if (!teacherProfile) {
                     teacherProfile = {}
                 } else {
@@ -383,22 +399,13 @@ function TeacherList() {
                     teacherProfile && (
                         teacherProfile.subjects && (
                             <div
-                                // onDoubleClick={() => {
-                                //     if (!editableSubject.includes(record)) {
-                                //         setEditableSubject([...editableSubject, record]);
-                                //     } else {
-                                //         setEditableSubject(editableSubject.filter(r => r.id !== record.id));
-                                //     }
-                                // }}
                                 style={{
                                     width: '200px'
                                 }}>
                                 {!editableSubject.includes(record) ?
 
                                     <Tooltip title={teacherProfile.subjects.map(s => s.name).join(', ')}>
-                                        {teacherProfile.subjects.map(s => s.name).join(', ').length <= 20 ?
-                                            teacherProfile.subjects.map(s => s.name).join(', ') :
-                                            (teacherProfile.subjects.map(s => s.name).join(', ')).substring(0, 19) + '...'}
+                                        {allSubjects.filter(s => teacherProfile.subjects.map(su => su.id).includes(s.id)).map(s => s.name).join(', ')}
                                     </Tooltip> :
                                     <Form layout="inline">
                                         <Form.Item>
