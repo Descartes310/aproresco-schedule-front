@@ -505,8 +505,8 @@ export const updateBooking = (id, schedule) => {
 
 export const createAvailibility = (teacherProfile, schedule) => {
     let data = {
-        teacherProfile: teacherProfile,
-        schedule: schedule
+        teacherProfile,
+        schedule
     }
     return axios.post(`${routes.AVAILABILITY}`, data).then(res => {
         return res;

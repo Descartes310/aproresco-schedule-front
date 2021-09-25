@@ -372,7 +372,6 @@ function CreateBooking() {
                     onFinish={handleSubmit}
                     layout="vertical"
                 >
-
                     <div style={{
                         display: 'flex',
                         flexDirection: 'row',
@@ -462,7 +461,6 @@ function CreateBooking() {
                                 </Form.Item>
                             </div>)
                     } */}
-
 
                     {!schedules ? <Spin className="loading-table" /> :
                         <Table
