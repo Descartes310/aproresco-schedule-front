@@ -1,14 +1,15 @@
 import 'antd/dist/antd.css';
 import { useHistory } from 'react-router-dom';
 import '../../Assets/container/StudentList.css';
+import React, { useEffect, useState } from 'react';
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
-import React, { useEffect, useState } from 'react';
-import { createBooking, getCourses } from '../../services/Teacher';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import { createBooking, getCourses } from '../../services/Teacher';
 import { PageHeader, Form, Input, Button, Table, Spin } from 'antd';
+import SearchFilter from '../../components/StudentList/SearchFilter';
 import { VerticalAlignBottomOutlined, VerticalAlignTopOutlined } from "@ant-design/icons"
-import { getStudentProfileByDate, findStudentProfileByFirstNameAndLastName, getSchedule } from '../../services/Student'
+import { getStudentProfileByDate, findStudentProfileByFirstNameAndLastName, getSchedule, getScheduleByDate } from '../../services/Student'
 
 function CreateBooking() {
 
@@ -17,6 +18,7 @@ function CreateBooking() {
     const [open, setOpen] = useState(false);
     const [comment, setComment] = useState('');
     const [courses, setCourses] = useState([]);
+    const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [student, setStudent] = useState(null);
     const [schedules, setSchedules] = useState([]);
@@ -28,6 +30,7 @@ function CreateBooking() {
     const [submitting, setSubmitting] = useState(false);
     const [sortingType, setSortingType] = useState("desc");
     const [sortingName, setSortingName] = useState("createDate");
+    const [grades, setGrades] = useState("");
 
     const [tableProps, setTableProps] = useState({
         totalCount: 0,
@@ -51,11 +54,17 @@ function CreateBooking() {
                 repeatPeriodInDays: record.repeatPeriodInDays,
                 price: record.price,
             }
-            console.log(sch)
             setSchedule(sch)
         },
         type: 'radio'
     };
+
+
+    const [search, setSearch] = useState({
+        name: "",
+        firstName: "",
+        lastName: "",
+    })
 
     useEffect(() => {
         getAllCourses();
@@ -74,7 +83,6 @@ function CreateBooking() {
 
     useEffect(() => {
         getStudents();
-        getListView();
     }, [sortingType, sortingName, tableProps.pageIndex]);
 
     const changeChildren = (value) => {
@@ -83,17 +91,6 @@ function CreateBooking() {
         }
         let _children = studentList.filter(c => c.id === value.id)[0];
         setChildren(_children);
-        console.log(_children);
-        getSchedule(_children ? _children.grade ? _children.grade : 0 : 0, -1).then(data => {
-            setSchedules(data.content)
-            var obj = {};
-            for (var i = 0, len = data.content.length; i < len; i++)
-                obj[data.content[i]['subject']] = data.content[i];
-
-            data.content = new Array();
-            for (var key in obj)
-                data.content.push(obj[key]);
-        });
     }
 
     const handleSubmit = () => {
@@ -130,37 +127,6 @@ function CreateBooking() {
             }).finally(() => setLoadingS(false))
         }
 
-    }
-
-    const getListView = () => {
-        getSchedule(0, 100).then(data => {
-            if (data) {
-                if (data.content) {
-                    setSchedules([])
-                    setSchedules([...new Map(data.content.map(item => [item['id'], item])).values()]);
-                    setTableProps({
-                        ...tableProps,
-                        totalCount: data.totalCount,
-                        pageSize: 30,
-                    });
-                } else {
-                    setSchedules([])
-                    setTableProps({
-                        ...tableProps,
-                        totalCount: 0,
-                        pageSize: 30,
-                    });
-                }
-            } else {
-                setSchedules([])
-                setTableProps({
-                    ...tableProps,
-                    totalCount: 0,
-                    pageSize: 30,
-                });
-            }
-            setLoading(false);
-        })
     }
 
     const columns = [
@@ -346,6 +312,24 @@ function CreateBooking() {
         return result;
     }
 
+    const computeLastName = (name) => {
+        let lastName = '';
+        for (let index = 1; index < name.length; index++) {
+            lastName = lastName.trim() + ' ' + name[index].trim();
+        }
+        return lastName
+    }
+
+    const getSchedules = () => {
+        getScheduleByDate(grades, localStorage.getItem('toStart'), localStorage.getItem('toEnd'), 0, 100, sortingName, sortingType, course).then(data => {
+            data.content = data.content.sort(function (a, b) {
+                var dateA = new Date(a.createDate), dateB = new Date(b.createDate);
+                return dateB - dateA;
+            });
+            setSchedules(data.content);
+        });
+    }
+
     const handleTableChange = (pagination, filters, sorter) => {
         setTableProps({
             ...tableProps,
@@ -355,6 +339,27 @@ function CreateBooking() {
         setLoading(true);
         setSchedules([]);
     };
+
+    const changeSearch = (e) => {
+        const { name, value } = e.target;
+        setSearch({ ...search, [name]: value });
+        if (e.target.name === "name") {
+            var nameData = value.split(" ");
+            if (nameData.length > 1) {
+                setSearch({ ...search, firstName: nameData[0].trim(), lastName: computeLastName(nameData) });
+            }
+            else {
+                setSearch({ ...search, firstName: nameData[0].trim(), lastName: nameData[0].trim() });
+            }
+        }
+
+        if (e.target.name === "grades") {
+            setGrades(value)
+        }
+    };
+    const searchList = () => {
+        getSchedules();
+    }
 
     return (
 
@@ -431,53 +436,33 @@ function CreateBooking() {
                             <Input type="text" name="comment" style={{ marginTop: '3px', padding: '8px 8px', lineHeight: '14px' }} onChange={(e) => setComment(e.target.value)} />
                         </Form.Item>
                     </div>
-                    {/* {
-                        !tagsList ?
-                            (<></>)
-                            :
-                            (<div style={{
-                                display: 'flex',
-                                flexDirection: 'row'
-                            }}>
-                                <Form.Item label="Tags" required style={{ flex: 1, marginRight: '10px', marginLeft: '10px' }} onClick={() => setOpen1(open1 ? false : true)}>
-                                    <Select mode="multiple"
-                                        allowClear
-                                        loading={loadingS}
-                                        open={open1}
-                                        onFocus={() => setOpen1(true)}
-                                        onBlur={() => setOpen1(false)}
-                                        style={{ width: '100%' }}
-                                        onSelect={() => setOpen1(false)}
-                                        placeholder="Please select tags"
-                                        onChange={handleChangeTags}>
-                                        {
-                                            tagsList.map(tag => {
-                                                return (
-                                                    <Select.Option value={tag.id} key={tag.id}>{tag.name}</Select.Option>
-                                                )
-                                            })
-                                        }
-                                    </Select>
-                                </Form.Item>
-                            </div>)
-                    } */}
 
-                    {!schedules ? <Spin className="loading-table" /> :
-                        <Table
-                            className="table-padding"
-                            style={{ marginLeft: '10px', marginRight: '10px' }}
-                            columns={columns}
-                            loading={loading}
-                            dataSource={schedules}
-                            onChange={handleTableChange}
-                            pagination={{
-                                total: tableProps.totalCount,
-                                pageSize: tableProps.pageSize,
-                                showTotal: (total, range) => `${range[0]}-${range[1]} out of ${total}`,
-                            }}
-                            rowSelection={rowSelection}
-                            rowKey="id"
-                        />}
+                    <div style={{ display: 'flex', flex: 1, marginBottom: 20, marginTop: 30 }}>
+                        <SearchFilter
+                            changeInput={changeSearch}
+                            changeCourse={(courseId) => setCourse(courseId)}
+                            searchList={searchList}
+                            type='schedule'
+                            enabled={!children}
+                            courses={courses}
+                        />
+                    </div>
+
+                    <Table
+                        className="table-padding"
+                        style={{ marginLeft: '10px', marginRight: '10px' }}
+                        columns={columns}
+                        loading={loading}
+                        dataSource={schedules}
+                        onChange={handleTableChange}
+                        pagination={{
+                            total: tableProps.totalCount,
+                            pageSize: tableProps.pageSize,
+                            showTotal: (total, range) => `${range[0]}-${range[1]} out of ${total}`,
+                        }}
+                        rowSelection={rowSelection}
+                        rowKey="id"
+                    />
                 </Form>
             </PageHeader>
         </div>

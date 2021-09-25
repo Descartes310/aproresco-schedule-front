@@ -63,15 +63,78 @@ export const getParentById = (id) => {
 //         })
 // }
 
-export const getScheduleByDate = (gradeMin, gradeMax, start, end, page, size, sortName, sortType) => {
+const computeGrades = (gradesInput) => {
 
-    let grades = "";
+    gradesInput = gradesInput.trim();
 
-    for (let index = gradeMin; index <= gradeMax; index++) {
-        grades = grades + "&grade="+index
+    if (gradesInput.length === 0)
+        return [];
+
+    if (gradesInput.includes(',')) {
+        try {
+            let grades = gradesInput.split(',');
+            let response = [];
+            for (let index = 0; index < grades.length; index++) {
+                const item = grades[index];
+                if (item.includes('-')) {
+                    response = [...response, ...computeGrades(item.trim())];
+                } else {
+                    response.push(new Number(item+"".trim()));
+                }
+            }
+            return response;
+        } catch (err) {
+            console.log('Error 5 => ', err);
+            throw 'Error... 5';
+        }
+    } else {
+        let grades = gradesInput.split('-');
+        if (grades.length <= 2 && grades.length > 0) {
+            if (grades.length === 1) {
+                try {
+                    return [new Number(grades[0]+"".trim())];
+                } catch (err) {
+                    console.log('Error 1 => ', err);
+                    throw "Error... 1"
+                }
+            } else {
+                try {
+                    let response = [];
+                    for (let index = grades[0]; index <= grades[1]; index++) {
+                        response.push(new Number(index+"".trim()));
+                    }
+                    return response;
+                } catch (err) {
+                    console.log('Error 3 => ', err)
+                    throw "Error... 3";
+                }
+            }
+        } else {
+            console.log('Mauvais format de donnée');
+            throw "Error... 4"
+        }
+    }
+}
+
+export const getScheduleByDate = (gradesInput, start, end, page, size, sortName, sortType, courseId = null) => {
+
+    let gradeResponse = [];
+
+    try {
+        gradeResponse = computeGrades(gradesInput);
+    } catch (err) {
+        console.log(err);
+        alert('Bad format for grades');
+        return
     }
 
-    return axios.get(`${routes.SCHEDULE}?&startDate=${start}${grades}&endDate=${end}&page=${page}&size=${size}&sort=${sortName},${sortType ? sortType : 'asc'}`)
+    let grades = '';
+
+    for (let index = 0; index < gradeResponse.length; index++) {
+        grades = grades + "&grade=" + gradeResponse[index]+"".trim();
+    }
+
+    return axios.get(`${routes.SCHEDULE}?startDate=${start}${courseId ? '&courseId=' + courseId : ''}${grades}&endDate=${end}&page=${page}&size=${size}&sort=${sortName},${sortType ? sortType : 'asc'}`)
         .then(res => {
             return res.data;
         })
@@ -100,7 +163,7 @@ export const getSchedule = (min = 0, max = 20) => {
     let grades = "";
 
     for (let index = min; index <= max; index++) {
-        grades = grades + "&grade="+index
+        grades = grades + "&grade=" + index
     }
 
     return axios.get(`${routes.SCHEDULE}?page=${page}${grades}&size=${size}&sort=${filter},${sort}`)
@@ -197,13 +260,25 @@ export const findParentProfileByEmail = (email, page, size, sortName, sortType) 
         })
 }
 
-export const findScheduleByGrade = (gradeMin, gradeMax, start, end, page, size, sortName, sortType) => {
-    let grades = "";
+export const findScheduleByGrade = (gradesInput, start, end, page, size, sortName, sortType, courseId = null) => {
 
-    for (let index = gradeMin; index <= gradeMax; index++) {
-        grades = grades + "&grade="+index
+    let gradeResponse = [];
+
+    try {
+        gradeResponse = computeGrades(gradesInput);
+    } catch (err) {
+        console.log(err);
+        alert('Bad format for grades');
+        return
     }
-    return axios.get(`${routes.SCHEDULE}?startDate=${start}${grades}&endDate=${end}&page=${page}&size=${size}&sort=${sortName},${sortType ? sortType : 'asc'}`)
+
+    let grades = '';
+
+    for (let index = 0; index < gradeResponse.length; index++) {
+        grades = grades + "&grade=" + gradeResponse[index]+"".trim();
+    }
+
+    return axios.get(`${routes.SCHEDULE}?startDate=${start}${courseId ? '&courseId=' + courseId : ''}${grades}&endDate=${end}&page=${page}&size=${size}&sort=${sortName},${sortType ? sortType : 'asc'}`)
         .then(res => {
             return res.data;
         })
@@ -398,10 +473,10 @@ export const deleteSchedule = (ids) => {
     let data = ids.split(',');
     let url = '';
     data.forEach((d, i) => {
-        if(i === data.length-1)
-            url += 'id='+d
-        else 
-            url += 'id='+d+'&'
+        if (i === data.length - 1)
+            url += 'id=' + d
+        else
+            url += 'id=' + d + '&'
     })
     return axios.delete(`${routes.SERVER_ADDRESS}/${routes.SCHEDULE}?${url}`).then(res => {
         return res;
@@ -412,10 +487,10 @@ export const deleteStudentProfiles = (ids) => {
     let data = ids.split(',');
     let url = '';
     data.forEach((d, i) => {
-        if(i === data.length-1)
-            url += 'id='+d
-        else 
-            url += 'id='+d+'&'
+        if (i === data.length - 1)
+            url += 'id=' + d
+        else
+            url += 'id=' + d + '&'
     })
     return axios.delete(`${routes.SERVER_ADDRESS}/${routes.SCHEDULE}?${url}`).then(res => {
         return res;
@@ -426,10 +501,10 @@ export const deleteTeacherProfile = (ids) => {
     let data = ids.split(',');
     let url = '';
     data.forEach((d, i) => {
-        if(i === data.length-1)
-            url += 'id='+d
-        else 
-            url += 'id='+d+'&'
+        if (i === data.length - 1)
+            url += 'id=' + d
+        else
+            url += 'id=' + d + '&'
     })
     return axios.delete(`${routes.SERVER_ADDRESS}/${routes.SCHEDULE}?${url}`).then(res => {
         return res;
@@ -440,10 +515,10 @@ export const deleteParents = (ids) => {
     let data = ids.split(',');
     let url = '';
     data.forEach((d, i) => {
-        if(i === data.length-1)
-            url += 'id='+d
-        else 
-            url += 'id='+d+'&'
+        if (i === data.length - 1)
+            url += 'id=' + d
+        else
+            url += 'id=' + d + '&'
     })
     return axios.delete(`${routes.SERVER_ADDRESS}/${routes.PARENT}?${url}`).then(res => {
         return res;
@@ -454,10 +529,10 @@ export const deleteAvailabilities = (ids) => {
     let data = ids.split(',');
     let url = '';
     data.forEach((d, i) => {
-        if(i === data.length-1)
-            url += 'id='+d
-        else 
-            url += 'id='+d+'&'
+        if (i === data.length - 1)
+            url += 'id=' + d
+        else
+            url += 'id=' + d + '&'
     })
     return axios.delete(`${routes.SERVER_ADDRESS}/${routes.AVAILABILITY}?${url}`).then(res => {
         return res;
@@ -468,10 +543,10 @@ export const deleteBookings = (ids) => {
     let data = ids.split(',');
     let url = '';
     data.forEach((d, i) => {
-        if(i === data.length-1)
-            url += 'id='+d
-        else 
-            url += 'id='+d+'&'
+        if (i === data.length - 1)
+            url += 'id=' + d
+        else
+            url += 'id=' + d + '&'
     })
     return axios.delete(`${routes.SERVER_ADDRESS}/${routes.BOOKING}?${url}`).then(res => {
         return res;
@@ -496,7 +571,7 @@ export const sendMessageToBooking = (booking_id, message) => {
             'Content-Length': 0,
             'Content-Type': 'text/plain'
         },
-       responseType: 'text'
+        responseType: 'text'
     };
     return axios.post(`${routes.SERVER_ADDRESS}/message/booking/${booking_id}`, message, config).then(res => {
         return res;
@@ -519,14 +594,14 @@ export const getTagByName = (name) => {
 }
 
 export const addTag = (data) => {
-    return axios.post(`${routes.TAG}`,data)
+    return axios.post(`${routes.TAG}`, data)
         .then(res => {
             return res.data;
         })
         .catch(err => console.log(err))
 }
 
-export const updateTag = (id,data) => {
+export const updateTag = (id, data) => {
     return axios.patch(`${routes.TAG}/${id}`, data)
         .then(res => {
             return res.data;
@@ -535,7 +610,7 @@ export const updateTag = (id,data) => {
 }
 
 export const enableTags = (data) => {
-    return axios.post(`${routes.TAG}/enable`,data)
+    return axios.post(`${routes.TAG}/enable`, data)
         .then(res => {
             return res.data;
         })
@@ -543,7 +618,7 @@ export const enableTags = (data) => {
 }
 
 export const disableTags = (data) => {
-    return axios.post(`${routes.TAG}/disable`,data)
+    return axios.post(`${routes.TAG}/disable`, data)
         .then(res => {
             return res.data;
         })

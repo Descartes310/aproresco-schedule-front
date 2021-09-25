@@ -4,9 +4,11 @@ import { useHistory } from 'react-router-dom';
 import { useLocation } from "react-router-dom";
 import '../../Assets/container/StudentList.css'
 import React, { useEffect, useState } from 'react';
-import { PageHeader, Form, Button, Select } from 'antd';
+import { PageHeader, Form, Button, Select, Table } from 'antd';
 import { updateBooking, getCourses } from '../../services/Teacher';
-import { getSchedule } from '../../services/Student';
+import SearchFilter from '../../components/StudentList/SearchFilter';
+import { VerticalAlignBottomOutlined, VerticalAlignTopOutlined } from "@ant-design/icons"
+import { getSchedule, getStudentProfileByDate, findStudentProfileByFirstNameAndLastName, getScheduleByDate } from '../../services/Student';
 
 function UpdateBooking() {
 
@@ -18,15 +20,54 @@ function UpdateBooking() {
     const [courses, setCourses] = useState([]);
     const [subjec, setSubjec] = useState(null);
     const [submitting, setSubmitting] = useState(false);
+    const [grades, setGrades] = useState("");
+
+    const [course, setCourse] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [student, setStudent] = useState(null);
+    const [children, setChildren] = useState(location.state.student);
+    const [schedule, setSchedule] = useState(null);
+    const [loadingS, setLoadingS] = useState(false);
+    const [selectedRow, setSelectedRow] = useState([]);
+    const [studentList, setStudentList] = useState([]);
+    const [sortingType, setSortingType] = useState("desc");
+    const [sortingName, setSortingName] = useState("createDate");
+
+    const [tableProps, setTableProps] = useState({
+        totalCount: 0,
+        pageIndex: 0,
+        pageSize: 30,
+    });
+
+    const rowSelection = {
+        selectedRow,
+        onChange: (selectedrow, records) => {
+            setSelectedRow(records);
+            let record = records[0]
+            let sch = {
+                id: record.id,
+                subject: record.subject,
+                startDate: record.startDate,
+                endDate: record.endDate,
+                grades: record.grades,
+                durationInMinutes: record.durationInMinutes,
+                repeatPeriodInDays: record.repeatPeriodInDays,
+                price: record.price,
+            }
+            setSchedule(sch)
+        },
+        type: 'radio'
+    };
+
+
+    const [search, setSearch] = useState({
+        name: "",
+        firstName: "",
+        lastName: "",
+    })
 
     useEffect(() => {
         getAllCourses();
-        console.log(data)
-        // setSubjec(data.schedule.id);
-        getSchedule(data.studentProfile.grade, -1).then(data => {
-            setSchedules(data.content)
-
-        });
     }, []);
 
     const getAllCourses = () => {
@@ -39,24 +80,254 @@ function UpdateBooking() {
         })
     }
 
-    const changeSubject = (subjectId) => {
-        setSubjec(subjectId);
+    const columns = [
+        {
+            title: <div><span>Subject </span>
+                {sortingName === "subject" && sortingType === "asc" && <VerticalAlignBottomOutlined />}
+                {sortingName === "subject" && sortingType === "desc" && <VerticalAlignTopOutlined />}
+                {sortingName === "subject" && sortingType === "" && ""}
+            </div>,
+            onHeaderCell: (column) => {
+                return {
+                    onClick: () => {
+                        setSortingName("subject");
+                        if (sortingType === "") { setSortingType("asc") }
+                        else if (sortingType === "asc") { setSortingType("desc") }
+                        else if (sortingType === "desc") { setSortingType("asc"); setSortingName("subject"); }
+                    }
+                };
+            },
+            render: (record) => {
+                // let course = courses.find(c => c.id === record.courseId);
+                return (
+                    <div>
+                        {record.course ? record.course.subject ? record.course.subject.name : '' : ''}
+                    </div>
+                )
+            },
+            key: 'subject',
+        },
+        {
+            title: <div><span>Start Date </span>
+                {sortingName === "startDate" && sortingType === "asc" && <VerticalAlignBottomOutlined />}
+                {sortingName === "startDate" && sortingType === "desc" && <VerticalAlignTopOutlined />}
+                {sortingName === "startDate" && sortingType === "" && ""}
+            </div>,
+            onHeaderCell: (column) => {
+                return {
+                    onClick: () => {
+                        setSortingName("startDate");
+                        if (sortingType === "") { setSortingType("asc") }
+                        else if (sortingType === "asc") { setSortingType("desc") }
+                        else if (sortingType === "desc") { setSortingType("asc"); setSortingName("startDate"); }
+                    }
+                };
+            },
+            render: (record) => {
+                let s = record.startDate;
+                let date = (new Date(s)).toLocaleDateString();
+                let sTime = ((new Date(s)).toLocaleTimeString()).split(':');
+
+                let sst = sTime[0] + ':' + sTime[1];
+
+                return (
+                    <span>
+                        {date + " " + sst}
+                    </span>
+                )
+            },
+            key: 'startDate',
+        },
+        {
+            title: <div><span>End Date </span>
+                {sortingName === "endDate" && sortingType === "asc" && <VerticalAlignBottomOutlined />}
+                {sortingName === "endDate" && sortingType === "desc" && <VerticalAlignTopOutlined />}
+                {sortingName === "endDate" && sortingType === "" && ""}
+            </div>,
+            onHeaderCell: (column) => {
+                return {
+                    onClick: () => {
+                        setSortingName("endDate");
+                        if (sortingType === "") { setSortingType("asc") }
+                        else if (sortingType === "asc") { setSortingType("desc") }
+                        else if (sortingType === "desc") { setSortingType("asc"); setSortingName("endDate"); }
+                    }
+                };
+            },
+            render: (record) => {
+                let f = record.endDate;
+                let date = (new Date(f)).toLocaleDateString();
+                return (
+                    <span>
+                        {date}
+                    </span>
+                )
+            },
+            key: 'endDate',
+        },
+        {
+            title: 'Duration',
+            key: 'durationInMinutes',
+            render: (record) => {
+                let course = courses.find(c => c.id === record.course.id);
+                return (
+                    <div>
+                        {course ? course.durationInMinutes + ' min' : ''}
+                    </div>
+                )
+            }
+        },
+        {
+            title: 'Grades',
+            key: 'grades',
+            render: (record) => {
+                let course = record.course ? record.course : null
+                if (!course) {
+                    course = {};
+                    course.grade = []
+                }
+                return (
+                    <div>
+                        {gradesToPrint(course)}
+                    </div>
+                )
+            }
+        },
+        {
+            title: 'Price',
+            key: 'price',
+            render: (record) => {
+                let course = courses.find(c => c.id === record.course.id);
+                return (
+                    course && (
+                        <div>
+                            {course.prices[0].amount + ' ' + course.prices[0].currencyCode}
+                        </div>
+                    )
+                )
+            }
+        },
+        {
+            title: 'Repeat',
+            key: 'repeatPeriodInDays',
+            render: (record) => {
+                return (
+                    <div>
+                        {record.repeatPeriodInDays + ' d'}
+                    </div>
+                )
+            }
+        },
+        {
+            title: 'Language',
+            key: 'language',
+            render: (record) => {
+                let course = courses.find(c => c.id === record.course.id);
+                return (
+                    <div>
+                        {course ? course.language : ''}
+                    </div>
+                )
+            }
+        },
+    ];
+
+    const gradesToPrint = (profile) => {
+        let i = 0;
+        let result = '';
+        if (profile == null) {
+            return '';
+        }
+        if (profile.grades == null) {
+            return '';
+        }
+
+        for (i = 0; i < profile.grades.length; i++) {
+            if (i === 0) {
+                result += profile.grades[i];
+            } else {
+                if (i === (profile.grades.length - 1))
+                    if (Number(profile.grades[i - 1]) !== Number(profile.grades[i]) - 1)
+                        result = result + ', ' + profile.grades[i];
+                    else
+                        result = result + '-' + profile.grades[i];
+                else
+                    if (Number(profile.grades[i - 1]) !== Number(profile.grades[i]) - 1)
+                        if (Number(profile.grades[i]) !== Number(profile.grades[i + 1]) - 1)
+                            result = result + ',' + profile.grades[i] + ', ' + profile.grades[i + 1];
+                        else
+                            result = result + ',' + profile.grades[i];
+            }
+        }
+
+        return result;
     }
 
+    const computeLastName = (name) => {
+        let lastName = '';
+        for (let index = 1; index < name.length; index++) {
+            lastName = lastName.trim() + ' ' + name[index].trim();
+        }
+        return lastName
+    }
+
+    const getSchedules = () => {
+        getScheduleByDate(grades, localStorage.getItem('toStart'), localStorage.getItem('toEnd'), 0, 100, sortingName, sortingType, course).then(data => {
+            data.content = data.content.sort(function (a, b) {
+                var dateA = new Date(a.createDate), dateB = new Date(b.createDate);
+                return dateB - dateA;
+            });
+            setSchedules(data.content);
+        });
+    }
+
+    const handleTableChange = (pagination, filters, sorter) => {
+        setTableProps({
+            ...tableProps,
+            pageIndex: pagination.current - 1,
+            pageSize: pagination.pageSize,
+        });
+        setLoading(true);
+        setSchedules([]);
+    };
+
     const handleSubmit = () => {
-        if (!subjec) {
+        if (!schedule) {
             alert('Fill the form');
             return;
         }
 
         //setSubmitting(true);
 
-        updateBooking(data.id, schedules.find(s => s.id === subjec)).then(data => {
+        updateBooking(data.id, schedule).then(data => {
             history.push(`/studentlist`)
         }).catch(err => {
             alert("Error occured when saving data, please retry!")
             console.log(err)
         }).finally(() => setSubmitting(false));
+    }
+
+
+
+    const changeSearch = (e) => {
+        const { name, value } = e.target;
+        setSearch({ ...search, [name]: value });
+        if (e.target.name === "name") {
+            var nameData = value.split(" ");
+            if (nameData.length > 1) {
+                setSearch({ ...search, firstName: nameData[0].trim(), lastName: computeLastName(nameData) });
+            }
+            else {
+                setSearch({ ...search, firstName: nameData[0].trim(), lastName: nameData[0].trim() });
+            }
+        }
+
+        if (e.target.name === "grades") {
+            setGrades(value)
+        }
+    };
+    const searchList = () => {
+        getSchedules();
     }
 
     return (
@@ -75,161 +346,65 @@ function UpdateBooking() {
                     layout="vertical"
                     style={{ width: '80%', marginLeft: '10%' }}
                 >
+
                     <div style={{
                         display: 'flex',
-                        flexDirection: 'row'
+                        flexDirection: 'row',
+                        justifyContent: 'flex-end'
                     }}>
-                        {/* <Form.Item label="Student" required style={{ flex: 1, marginRight: '10px' }}>
-                            <Autocomplete
-                                id="asynchronous-search"
-                                options={studentList}
-                                size="small"
-                                inputValue={student}
-                                // closeIcon={<EditOutlined style={{ color: 'blue' }}/>}
-                                onInputChange={(__, newInputValue) => {
-                                    setStudent(newInputValue);
-                                }}
-                                onChange={(__, newValue) => {
-                                    changeChildren(newValue.id);
-                                }}
-                                defaultValue={data.studentProfile}
-                                open={open}
-                                onOpen={() => {
-                                    setOpen(true);
-                                }}
-                                onClose={() => {
-                                    setOpen(false);
-                                }}
-                                loading={loadingS}
-                                getOptionLabel={(record) => record.firstName + " " + record.lastName}
-                                // style={{ minWidth: 450, marginLeft: -250 }}
-                                renderInput={(params) =>
-                                    <TextField {...params}
-                                        variant="outlined"
-                                        InputProps={{
-                                            ...params.InputProps,
-                                            endAdornment: (
-                                                <React.Fragment>
-                                                    {loadingS ? <CircularProgress color="inherit" size={20} /> : null}
-                                                    {params.InputProps.endAdornment}
-                                                </React.Fragment>
-                                            ),
-                                        }}
-                                    />
-                                }
-                            />
-                        </Form.Item> */}
-                        <Form.Item label="Subject" required style={{ flex: 1, marginLeft: '10px' }}>
-                            <Select onChange={(e) => changeSubject(e)} value={schedules.find(s => s.id === subjec) ? subjec : null}>
-                                <option value={null}>Select a subject</option>
+                        <Form.Item>
+                            <Button onClick={() => handleSubmit} disabled={submitting} type="primary" size="large" htmlType="submit">
                                 {
-                                    schedules.filter(s => courses.find(c => c.id === s.course.id)).map((s, index) => {
-                                        return (
-                                            <option value={s.id} key={index}>
-                                                {courses.find(c => c.id === s.course.id).subject.name + " | " } 
-                                                {/* {s.startDate} */}
-                                                <Moment local format="D MMM YYYY HH:MM" withTitle>{s.startDate}</Moment>
-                                            </option>
-                                        )
-                                    })
+                                    submitting ? 'Loading...' : 'Update Student booking'
                                 }
-                            </Select>
+                            </Button>
                         </Form.Item>
                     </div>
-                    {/* <div style={{
-                        display: 'flex',
-                        flexDirection: 'row'
-                    }}>
-                        <Form.Item label="Start date" required style={{ flex: 1, marginRight: '10px' }}>
-                            <Select
-                                onChange={(e) => changeDate(e)}
-                                defaultValue={schedules.find(s => s.id === subjec) ?
-                                    <Moment local format="D MMM YYYY HH:MM" withTitle> {data.schedule.startDate}</Moment> : null}>
-                                <option value={null}>Select a start date</option>
-                                {
-                                    dates.map(date => {
-                                        return (
-                                            <option value={date.startDate} key={date.id}>
-                                                <Moment local format="D MMM YYYY HH:MM" withTitle>
-                                                    {date.startDate}
-                                                </Moment>
-                                            </option>
-                                        )
-                                    })
-                                }
-                            </Select>
-                        </Form.Item>
-                        <Form.Item label="Teacher availability" required style={{ flex: 1, marginLeft: '10px' }}>
-                            <Autocomplete
-                                id="asynchronous-search"
-                                options={list}
-                                size="small"
-                                inputValue={teacherName}
-                                // closeIcon={<EditOutlined style={{ color: 'blue' }}/>}
-                                onInputChange={(__, newInputValue) => {
-                                    console.log(newInputValue)
-                                    setTeacherName(newInputValue);
-                                }}
-                                defaultValue={data.teacherAvailability}
-                                onChange={(__, newValue) => {
-                                    setTeacherName(newValue.teacherProfile.firstName + " " + newValue.teacherProfile.lastName);
-                                    if (newValue != null) {
-                                        let teachers = list.filter(t => t.teacherProfile.firstName + " " + t.teacherProfile.lastName == newValue.teacherProfile.firstName + " " + newValue.teacherProfile.lastName);
-                                        if (teachers.length === 0) {
-                                            alert('This teacher is not found');
-                                        } else {
-                                            assigningStudents(teachers[0], data.id);
-                                        }
-                                    }
-                                }}
-                                open={open2}
-                                onOpen={() => {
-                                    setOpen2(true);
-                                }}
-                                onClose={() => {
-                                    setOpen2(false);
-                                }}
-                                loading={loading}
-                                getOptionLabel={(record) => record.teacherProfile.firstName + " " + record.teacherProfile.lastName}
-                                // style={{ minWidth: 450, marginLeft: -250 }}
-                                renderInput={(params) =>
-                                    <TextField {...params}
-                                        variant="outlined"
-                                        onChange={(e) => changeTeacherSearch(e)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' && !open) {
-                                                let teachers = list.filter(t => t.teacherProfile.firstName + " " + t.teacherProfile.lastName == teacherName);
-                                                if (teachers.length === 0) {
-                                                    alert('This teacher is not found');
-                                                } else {
-                                                    assigningStudents(teachers[0], data.id);
-                                                }
-                                            }
-                                        }}
-                                        InputProps={{
-                                            ...params.InputProps,
-                                            endAdornment: (
-                                                <React.Fragment>
-                                                    {loading ? <CircularProgress color="inherit" size={20} /> : null}
-                                                    {params.InputProps.endAdornment}
-                                                </React.Fragment>
-                                            ),
-                                        }}
-                                    />
-                                }
-                            />
-                        </Form.Item>
-                    </div> */}
-                    <Form.Item>
-                        <Button onClick={() => handleSubmit} disabled={submitting} type="primary" size="large" htmlType="submit">
+
+                    <div style={{ display: 'flex', flex: 1, marginBottom: 20, marginTop: 30 }}>
+                        <SearchFilter
+                            changeInput={changeSearch}
+                            changeCourse={(courseId) => setCourse(courseId)}
+                            searchList={searchList}
+                            type='schedule'
+                            enabled={!children}
+                            courses={courses}
+                        />
+                    </div>
+
+                    <Table
+                        className="table-padding"
+                        style={{ marginLeft: '10px', marginRight: '10px' }}
+                        columns={columns}
+                        loading={loading}
+                        dataSource={schedules}
+                        onChange={handleTableChange}
+                        pagination={{
+                            total: tableProps.totalCount,
+                            pageSize: tableProps.pageSize,
+                            showTotal: (total, range) => `${range[0]}-${range[1]} out of ${total}`,
+                        }}
+                        rowSelection={rowSelection}
+                        rowKey="id"
+                    />
+                    {/* <Form.Item label="Subject" required style={{ flex: 1, marginLeft: '10px' }}>
+                        <Select onChange={(e) => changeSubject(e)} value={schedules.find(s => s.id === subjec) ? subjec : null}>
+                            <option value={null}>Select a subject</option>
                             {
-                                submitting ? 'Loading...' : 'Update Student booking'
+                                schedules.filter(s => courses.find(c => c.id === s.course.id)).map((s, index) => {
+                                    return (
+                                        <option value={s.id} key={index}>
+                                            {courses.find(c => c.id === s.course.id).subject.name + " | "}
+                                            <Moment local format="D MMM YYYY HH:MM" withTitle>{s.startDate}</Moment>
+                                        </option>
+                                    )
+                                })
                             }
-                        </Button>
-                    </Form.Item>
+                        </Select>
+                    </Form.Item> */}
                 </Form>
             </PageHeader>
-        </div>
+        </div >
     )
 }
 export default UpdateBooking

@@ -1,15 +1,16 @@
 import 'antd/dist/antd.css';
 import Moment from 'react-moment';
-import { useHistory } from 'react-router-dom'
-import '../../Assets/container/StudentList.css'
-import React, { useEffect, useState } from 'react'
+import { useHistory } from 'react-router-dom';
+import '../../Assets/container/StudentList.css';
+import React, { useEffect, useState } from 'react';
 import TextField from '@material-ui/core/TextField';
-import { PageHeader, Form, Button, Select, Table, Spin } from 'antd';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import SearchFilter from '../../components/StudentList/SearchFilter';
+import { PageHeader, Form, Button, Select, Table, Spin } from 'antd';
 import { createAvailibility, getCourses } from '../../services/Teacher';
-import { VerticalAlignBottomOutlined, VerticalAlignTopOutlined } from "@ant-design/icons"
-import { getTeacherProfileByDate, getSchedule, findTeacherProfileByFirstNameAndLastName } from '../../services/Student'
+import { VerticalAlignBottomOutlined, VerticalAlignTopOutlined } from "@ant-design/icons";
+import { getTeacherProfileByDate, getSchedule, findTeacherProfileByFirstNameAndLastName, getScheduleByDate } from '../../services/Student'
 
 function CreateAvailibility() {
 
@@ -31,12 +32,19 @@ function CreateAvailibility() {
     const [endDate, setEndDate] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [sortingType, setSortingType] = useState("desc");
+    const [grades, setGrades] = useState("");
     const [sortingName, setSortingName] = useState("createDate");
+    const [course, setCourse] = useState(null);
     const [tableProps, setTableProps] = useState({
         totalCount: 0,
         pageIndex: 0,
         pageSize: 30,
     });
+    const [search, setSearch] = useState({
+        name: "",
+        firstName: "",
+        lastName: "",
+    })
 
     const rowSelection = {
         selectedRow,
@@ -54,7 +62,6 @@ function CreateAvailibility() {
                 repeatPeriodInDays: record.repeatPeriodInDays,
                 price: record.price,
             }
-            console.log(sch)
             setSchedule(sch)
         },
         type: 'radio'
@@ -64,29 +71,29 @@ function CreateAvailibility() {
         getAllCourses();
     }, []);
 
+    const computeLastName = (name) => {
+        let lastName = '';
+        for (let index = 1; index < name.length; index++) {
+            lastName = lastName.trim() + ' ' + name[index].trim();
+        }
+        return lastName
+    }
+
     const changeChildren = (id) => {
         setDates([]);
         setDat(null);
         let _children = studentList.filter(c => c.id === id)[0];
         setChildren(_children);
-        getSchedule(1).then(data => {
+    }
+
+    const getSchedules = () => {
+        getScheduleByDate(grades, localStorage.getItem('toStart'), localStorage.getItem('toEnd'), 0, 100, sortingName, sortingType, course).then(data => {
             data.content = data.content.sort(function (a, b) {
                 var dateA = new Date(a.createDate), dateB = new Date(b.createDate);
                 return dateB - dateA;
             });
-            setSchedules(data.content.filter(s => _children.subjects.map(cs => cs.id).includes(courses.find(c => c.id === s.course.id) ? courses.find(c => c.id === s.course.id).subject.id : 'null')));
-            setDat(null);
-            setDates([...new Map(data.content.filter(s => _children.subjects.map(cs => cs.id).includes(courses.find(c => c.id === s.course.id) ? courses.find(c => c.id === s.course.id).subject.id : 'null')).map(item => [item['createDate'], item])).values()]);
+            setSchedules(data.content);
         });
-    }
-
-    const changeDate = (date) => {
-        setDat(date);
-        setEnds([...new Map(schedules.filter(s => children.subjects.map(cs => cs.id).includes(s.course ? s.course.subject ? s.course.subject.id : 0 : 0)).filter(s => s.startDate === date).map(item => [item['createDate'], item])).values()]);
-    }
-
-    const changeEndDate = (date) => {
-        setEndDate(date);
     }
 
     const handleSubmit = () => {
@@ -330,6 +337,27 @@ function CreateAvailibility() {
         })
     }
 
+    const changeSearch = (e) => {
+        const { name, value } = e.target;
+        setSearch({ ...search, [name]: value });
+        if (e.target.name === "name") {
+            var nameData = value.split(" ");
+            if (nameData.length > 1) {
+                setSearch({ ...search, firstName: nameData[0].trim(), lastName: computeLastName(nameData) });
+            }
+            else {
+                setSearch({ ...search, firstName: nameData[0].trim(), lastName: nameData[0].trim() });
+            }
+        }
+
+        if (e.target.name === "grades") {
+            setGrades(value)
+        }
+    };
+    const searchList = () => {
+        getSchedules();
+    }
+
     return (
 
         <div>
@@ -401,6 +429,18 @@ function CreateAvailibility() {
                             }
                         />
                     </Form.Item>
+
+                    <div style={{ display: 'flex', flex: 1, marginBottom: 20, marginTop: 30 }}>
+                        <SearchFilter
+                            changeInput={changeSearch}
+                            changeCourse={(courseId) => setCourse(courseId)}
+                            searchList={searchList}
+                            type='schedule'
+                            enabled={!children}
+                            courses={courses}
+                        />
+                    </div>
+
                     <Table
                         className="table-padding"
                         columns={columns}
@@ -415,43 +455,6 @@ function CreateAvailibility() {
                         rowSelection={rowSelection}
                         rowKey="id"
                     />
-                    {/* <div style={{
-                        display: 'flex',
-                        flexDirection: 'row'
-                    }}>
-                        <Form.Item label="Start date" required style={{ flex: 1, marginRight: '10px' }}>
-                            <Select onChange={(e) => changeDate(e)}>
-                                <Select.Option value={null}>Select a start date</Select.Option>
-                                {
-                                    dates.map(date => {
-                                        return (
-                                            <Select.Option value={date.startDate} key={date.id}>
-                                                <Moment local format="D MMM YYYY HH:MM" withTitle>
-                                                    {date.startDate}
-                                                </Moment>
-                                            </Select.Option>
-                                        )
-                                    })
-                                }
-                            </Select>
-                        </Form.Item>
-                        <Form.Item label="End date" required style={{ flex: 1, marginLeft: '10px' }}>
-                            <Select onChange={(e) => changeEndDate(e)}>
-                                <Select.Option value={null}>Select an end date</Select.Option>
-                                {
-                                    ends.map(date => {
-                                        return (
-                                            <Select.Option value={date.endDate} key={date.id}>
-                                                <Moment local format="D MMM YYYY HH:MM" withTitle>
-                                                    {date.endDate}
-                                                </Moment>
-                                            </Select.Option>
-                                        )
-                                    })
-                                }
-                            </Select>
-                        </Form.Item>
-                    </div> */}
                 </Form>
             </PageHeader>
         </div>

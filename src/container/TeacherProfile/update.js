@@ -51,17 +51,19 @@ function CreateTeacher() {
         getAllSubjects();
         getCountry().then(data => {
             setCountry(data.countryCode.toString().toLowerCase());
-            formData.firstName = teacher.firstName;
-            formData.lastName = teacher.lastName;
-            formData.schoolName = teacher.schoolName;
-            formData.schoolBoard = teacher.schoolBoard;
-            formData.iemail = teacher.email;
-            if (teacher.grades)
-                setGrades(teacher.grades)
-            if (teacher.subjects)
-                setSubjects(teacher.subjects.map(s => s.id))
-            setPhone(teacher.phoneNumber)
-        })
+        });
+
+        formData.firstName = teacher.firstName;
+        formData.lastName = teacher.lastName;
+        formData.schoolName = teacher.schoolName;
+        formData.schoolBoard = teacher.schoolBoard;
+        formData.iemail = teacher.email;
+        if (teacher.grades)
+            setGrades(teacher.grades)
+        if (teacher.subjects)
+            setSubjects(teacher.subjects.map(s => s.id))
+        setPhone(teacher.phoneNumber)
+
         if (teacher.tags) {
             teacher.tags.map(tag => defaulttags.push(tag.name))
         }
@@ -115,6 +117,7 @@ function CreateTeacher() {
                 return
             }
         } else {
+            console.log(formData.firstName, formData.lastName, formData.iemail, phone)
             alert("Please, fill the form !");
             return
         }

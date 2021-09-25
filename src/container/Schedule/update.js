@@ -6,10 +6,10 @@ import Autocomplete from '@material-ui/lab/Autocomplete';
 import { useHistory, useLocation } from 'react-router-dom';
 import { PageHeader, Form, Input, Button, Select } from 'antd';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { updateSchedule, getCoursesByGrade } from '../../services/Teacher';
+import { updateSchedule, getCoursesByGrade, getScheduleById } from '../../services/Teacher';
 
 
-function UpdateSchedule() {
+function UpdateSchedule(props) {
 
     const history = useHistory();
     const [form] = Form.useForm();
@@ -21,25 +21,37 @@ function UpdateSchedule() {
     const [course, setCourse] = useState(null);
     const [defaultCourse, setDefaultCourse] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [endTime, setEndTime] = useState('');
+    const [startTime, setStartTime] = useState('');
     const [startDate, setStartDate] = useState('');
     const [courseId, setCourseId] = useState(null);
     const [repeatPeriod, setRepeatPeriod] = useState();
     const [submitting, setSubmitting] = useState(false);
-    const [schedule] = useState(location.state.schedule);
+    const [schedule, setSchedule] = useState(null);
 
     useEffect(() => {
-        let s = schedule.startDate.replaceAll('/', '-').split(' ')[0].split('-');
-        let f = schedule.endDate.replaceAll('/', '-').split(' ')[0].split('-');
-        setStartDate(s[2] + '-' + s[0] + '-' + s[1]);
-        setEndDate(f[2] + '-' + f[0] + '-' + f[1]);
-        setCourseId(schedule.courseId);
-        setRepeatPeriod(schedule.repeatPeriodInDays);
+        findScheduleById();
     }, []);
 
     useEffect(() => {
-        if (grade)
+        if (schedule) {
+            let start = new Date(schedule.startDate);
+            let end = new Date(schedule.endDate);
+            setStartDate(start.getFullYear() + '-' + ((start.getMonth()+1) < 10 ? '0'+(start.getMonth()+1) : (start.getMonth()+1)) + '-' + (start.getDate() < 10 ? '0'+start.getDate() : start.getDate()));
+            setEndDate(end.getFullYear() + '-' + ((end.getMonth()+1) < 10 ? '0'+(end.getMonth()+1) : (end.getMonth()+1)) + '-' + (end.getDate() < 10 ? '0'+end.getDate() : end.getDate()));
+            setStartTime(((start.getHours()) < 10 ? '0'+(start.getHours()) : (start.getHours())) +':'+((start.getMinutes()) < 10 ? '0'+(start.getMinutes()) : (start.getMinutes())));
+            setEndTime(((end.getHours()) < 10 ? '0'+(end.getHours()) : (end.getHours())) +':'+((end.getMinutes()) < 10 ? '0'+(end.getMinutes()) : (end.getMinutes())));
+            setCourseId(schedule.courseId);
+            setRepeatPeriod(schedule.repeatPeriodInDays);
             getAllCourses();
-    }, [grade]);
+        }
+    }, [schedule]);
+
+    const findScheduleById = () => {
+        getScheduleById(props.match.params.id).then(response => {
+            setSchedule(response);
+        })
+    }
 
     const getAllCourses = () => {
         setLoading(true);
@@ -47,9 +59,6 @@ function UpdateSchedule() {
             if (data) {
                 if (data.content) {
                     setCourses(data.content);
-                    setCourse(data.content.find(c => c.id === schedule.courseId).name);
-                    setDefaultCourse(data.content.find(c => c.id === schedule.courseId));
-                    setGrade(data.content.find(c => c.id === schedule.courseId).grades[0]);
                 }
             }
         }).finally(() => setLoading(false))
@@ -82,15 +91,15 @@ function UpdateSchedule() {
         // let date = new Date(startDate);
         // let d = (date.getMonth() + 1).toString().padStart(2, '0') + '/' + date.getDate().toString().padStart(2, '0') + '/' + date.getFullYear();
         let d = startDate.split('-')[1] + '/' + startDate.split('-')[2] + '/' + startDate.split('-')[0];
-        
+
         // console.log(endDate);
         // let fdate = new Date(endDate);
         let f = endDate.split('-')[1] + '/' + endDate.split('-')[2] + '/' + endDate.split('-')[0];
 
         let data = {
             course: courses.find(c => c.id === courseId),
-            startDate: d, //+' '+startTime+':00 '+new Date().toString().split('GMT')[1].split(' ')[0].trim(),
-            endDate: f, //+' '+endTime+':00 '+new Date().toString().split('GMT')[1].split(' ')[0].trim(),
+            startDate: d+' '+startTime+':00 '+new Date().toString().split('GMT')[1].split(' ')[0].trim(),
+            endDate: f+' '+endTime+':00 '+new Date().toString().split('GMT')[1].split(' ')[0].trim(),
             repeatPeriodInDays: repeatPeriod,
         }
 
@@ -151,8 +160,6 @@ function UpdateSchedule() {
                                 id="asynchronous-search"
                                 options={courses}
                                 size="small"
-                                inputValue={course}
-                                defaultValue={defaultCourse}
                                 onInputChange={(__, newInputValue) => {
                                     setCourse(newInputValue);
                                 }}
@@ -190,6 +197,7 @@ function UpdateSchedule() {
                         </Form.Item>
                     </div>
 
+
                     <div style={{
                         display: 'flex',
                         flexDirection: 'row'
@@ -197,18 +205,22 @@ function UpdateSchedule() {
                         <Form.Item label="Start date" required style={{ flex: 1, marginRight: '10px' }}>
                             <Input type="date" name="startDate" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
                         </Form.Item>
-                        <Form.Item label="End date" required style={{ flex: 1, marginRight: '10px' }}>
-                            <Input type="date" name="endDate" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                        <Form.Item label="Start time" required style={{ flex: 1, marginRight: '10px' }}>
+                            <Input type="time" name="startTime" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
                         </Form.Item>
                     </div>
-                    {/* <div style={{
+
+                    <div style={{
                         display: 'flex',
                         flexDirection: 'row'
                     }}>
-                        <Form.Item label="Start time" required style={{ flex: 1, marginRight: '10px' }}>
-                            <Input type="time" name="startTime" onChange={handleChange} />
+                        <Form.Item label="End date" required style={{ flex: 1, marginRight: '10px' }}>
+                            <Input type="date" name="endDate" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
                         </Form.Item>
-                    </div> */}
+                        <Form.Item label="End time" required style={{ flex: 1, marginRight: '10px' }}>
+                            <Input type="time" name="endTime" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+                        </Form.Item>
+                    </div>
 
                     <Form.Item>
                         <Button disabled={submitting} type="primary" size="large" htmlType="submit">

@@ -13,9 +13,9 @@ import { VerticalAlignBottomOutlined, VerticalAlignTopOutlined, PlusOutlined, De
 function Schedule() {
     const history = useHistory();
     const [courses, setCourses] = useState([]);
-    const [gradeMin, setGradeMin] = useState("0");
+    const [course, setCourse] = useState(null);
+    const [grades, setGrades] = useState("");
     const [schedules, setSchedules] = useState([]);
-    const [gradeMax, setGradeMax] = useState("100");
     const [selectedRow, setSelectedRow] = useState([]);
     const [sortingType, setSortingType] = useState("desc");
     const [sortingName, setSortingName] = useState("createDate");
@@ -300,7 +300,7 @@ function Schedule() {
 
     const getListView = () => {
         if (search.firstName === "" && search.lastName === "") {
-            getScheduleByDate(gradeMin, gradeMax, localStorage.getItem('toStart'), localStorage.getItem('toEnd'), tableProps.pageIndex, tableProps.pageSize, sortingName, sortingType).then(data => {
+            getScheduleByDate(grades, localStorage.getItem('toStart'), localStorage.getItem('toEnd'), tableProps.pageIndex, tableProps.pageSize, sortingName, sortingType, course).then(data => {
                 if (data) {
                     if (data.content) {
 
@@ -335,7 +335,7 @@ function Schedule() {
             })
         }
         else {
-            findScheduleByGrade(gradeMin, gradeMax, localStorage.getItem('toStart'), localStorage.getItem('toEnd'), tableProps.pageIndex, tableProps.pageSize, sortingName, sortingType).then(data => {
+            findScheduleByGrade(grades, localStorage.getItem('toStart'), localStorage.getItem('toEnd'), tableProps.pageIndex, tableProps.pageSize, sortingName, sortingType, course).then(data => {
                 if (data) {
                     if (data.content) {
 
@@ -384,14 +384,11 @@ function Schedule() {
             }
         }
 
-        if (e.target.name === "gradeMin") {
-            setGradeMin(value)
-        }
-
-        if (e.target.name === "gradeMax") {
-            setGradeMax(value)
+        if (e.target.name === "grades") {
+            setGrades(value)
         }
     };
+
     const searchList = () => {
         getListView();
     }
@@ -420,8 +417,10 @@ function Schedule() {
                     <div style={{ display: 'flex', flex: 1 }}>
                         <SearchFilter
                             changeInput={changeSearch}
+                            changeCourse={(courseId) => setCourse(courseId)}
                             searchList={searchList}
                             type='schedule'
+                            courses={courses}
                         />
                     </div>
 

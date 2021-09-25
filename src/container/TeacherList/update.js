@@ -4,8 +4,9 @@ import { useLocation } from "react-router-dom";
 import '../../Assets/container/StudentList.css'
 import { PageHeader, Form, Button, Table } from 'antd';
 import React, { useEffect, useState } from 'react'
+import SearchFilter from '../../components/StudentList/SearchFilter';
 import { updateAvailibility, getCourses, getTeacherAvailabilityById, getTeacherProfileById } from '../../services/Teacher';
-import { getTeacherProfileByDate, getSchedule } from '../../services/Student'
+import { getTeacherProfileByDate, getSchedule, getScheduleByDate } from '../../services/Student'
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import { VerticalAlignBottomOutlined, VerticalAlignTopOutlined } from "@ant-design/icons"
@@ -16,8 +17,9 @@ import StudentListOfTeacher from './StudentListOfTeacher';
 function CreateAvailibility(props) {
 
     const history = useHistory();
-    const [courses, setCourses] = useState([]);
+    const [grades, setGrades] = useState("");    
     const [loading, setLoading] = useState(true);
+    const [courses, setCourses] = useState([]);
     const location = useLocation();
     const [open, setOpen] = useState(false);
     const [loadingS, setLoadingS] = useState(false);
@@ -42,6 +44,12 @@ function CreateAvailibility(props) {
         pageIndex: 0,
         pageSize: 30,
     });
+    const [course, setCourse] = useState(null);
+    const [search, setSearch] = useState({
+        name: "",
+        firstName: "",
+        lastName: "",
+    })
 
     const rowSelection = {
         selectedRow,
@@ -64,22 +72,26 @@ function CreateAvailibility(props) {
         type: 'radio'
     };
 
+
+    const computeLastName = (name) => {
+        let lastName = '';
+        for (let index = 1; index < name.length; index++) {
+            lastName = lastName.trim() + ' ' + name[index].trim();
+        }
+        return lastName
+    }
+
     const getTeacherById = (id) => {
         getTeacherAvailabilityById(props.match.params.id).then(data => {
             setTeacher(data);
             getProfileById(data.teacherProfile.id, data.schedule);
             setSchedule(data.schedule);
-            console.log('Schedule 1 => ', data.schedule)
         });
     }
 
     const getProfileById = (id, selectedSchedule) => {
         getTeacherProfileById(id).then(resp => {
             setChildren(resp);
-            getSchedule(1).then(data => {
-                setSelectedRow([data.content.filter(s => s.id === selectedSchedule.id)]);
-                setSchedules(data.content.filter(s => resp.subjects.map(cs => cs.id).includes(courses.find(c => c.id === s.course.id) ? courses.find(c => c.id === s.course.id).subject.id : 'null')));
-            });
         });
     }
 
@@ -102,22 +114,6 @@ function CreateAvailibility(props) {
                 }
             }
         })
-    }
-
-
-    const changeChildren = (id) => {
-        setDates([]);
-        let _children = studentList.filter(c => c.id === id)[0];
-        setChildren(_children);
-        getSchedule(1).then(data => {
-            data.content = data.content.sort(function (a, b) {
-                var dateA = new Date(a.createDate), dateB = new Date(b.createDate);
-                return dateB - dateA;
-            });
-            setSchedules(data.content.filter(s => _children.subjects.map(cs => cs.id).includes(courses.find(c => c.id === s.course.id) ? courses.find(c => c.id === s.course.id).subject.id : 'null')));
-            setDat(null);
-            setDates([...new Map(data.content.filter(s => _children.subjects.includes(s.subject)).map(item => [item['id'], item])).values()]);
-        });
     }
 
     const handleSubmit = () => {
@@ -146,6 +142,16 @@ function CreateAvailibility(props) {
                 }
             }
         }).finally(() => setLoadingS(false))
+    }
+
+    const getSchedules = () => {
+        getScheduleByDate(grades, localStorage.getItem('toStart'), localStorage.getItem('toEnd'), 0, 100, sortingName, sortingType, course).then(data => {
+            data.content = data.content.sort(function (a, b) {
+                var dateA = new Date(a.createDate), dateB = new Date(b.createDate);
+                return dateB - dateA;
+            });
+            setSchedules(data.content);
+        });
     }
 
     const handleTableChange = (pagination, filters, sorter) => {
@@ -341,6 +347,29 @@ function CreateAvailibility(props) {
         return result;
     }
 
+
+
+    const changeSearch = (e) => {
+        const { name, value } = e.target;
+        setSearch({ ...search, [name]: value });
+        if (e.target.name === "name") {
+            var nameData = value.split(" ");
+            if (nameData.length > 1) {
+                setSearch({ ...search, firstName: nameData[0].trim(), lastName: computeLastName(nameData) });
+            }
+            else {
+                setSearch({ ...search, firstName: nameData[0].trim(), lastName: nameData[0].trim() });
+            }
+        }
+
+        if (e.target.name === "grades") {
+            setGrades(value)
+        }
+    };
+    const searchList = () => {
+        getSchedules();
+    }
+
     return (
 
         <div>
@@ -371,63 +400,18 @@ function CreateAvailibility(props) {
                             </Button>
                         </Form.Item>
                     </div>
-                    {/* 
-                    <div style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        justifyContent: 'flex-end'
-                    }}>
-                        <Form.Item>
-                            <Button disabled={submitting || schedules.length <= 0} onClick={() => handleSubmit} type="primary" size="large" htmlType="submit">
-                                {
-                                    submitting ? 'Loading...' : 'Create a Teacher Availability'
-                                }
-                            </Button>
-                        </Form.Item>
-                    </div>
-                    <Form.Item label="Teacher" required>
-                        <Autocomplete
-                            id="asynchronous-search"
-                            options={studentList}
-                            size="small"
-                            defaultValue={children}
-                            inputValue={student}
-                            onInputChange={(__, newInputValue) => {
-                                if (newInputValue != null) {
-                                    setStudent(newInputValue);
-                                    getStudents(newInputValue);
-                                }
-                            }}
-                            onChange={(__, newValue) => {
-                                if (newValue != null) {
-                                    changeChildren(newValue.id);
-                                }
-                            }}
-                            open={open}
-                            onOpen={() => {
-                                setOpen(true);
-                            }}
-                            onClose={() => {
-                                setOpen(false);
-                            }}
-                            loading={loadingS}
-                            getOptionLabel={(record) => record.firstName + " " + record.lastName}
-                            renderInput={(params) =>
-                                <TextField {...params}
-                                    variant="outlined"
-                                    InputProps={{
-                                        ...params.InputProps,
-                                        endAdornment: (
-                                            <React.Fragment>
-                                                {loadingS ? <CircularProgress color="inherit" size={20} /> : null}
-                                                {params.InputProps.endAdornment}
-                                            </React.Fragment>
-                                        ),
-                                    }}
-                                />
-                            }
+
+                    <div style={{ display: 'flex', flex: 1, marginBottom: 20, marginTop: 30 }}>
+                        <SearchFilter
+                            changeInput={changeSearch}
+                            changeCourse={(courseId) => setCourse(courseId)}
+                            searchList={searchList}
+                            type='schedule'
+                            enabled={!children}
+                            courses={courses}
                         />
-                    </Form.Item> */}
+                    </div>
+
                     <Table
                         className="table-padding"
                         columns={columns}

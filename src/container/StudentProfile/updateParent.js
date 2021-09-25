@@ -34,12 +34,12 @@ function UpdateParent() {
     useEffect(() => {
         getCountry().then(data => {
             setCountry(data.countryCode.toString().toLowerCase());
-            formData.firstName = parent.firstName;
-            formData.lastName = parent.lastName;
-            formData.email = parent.email;
-            setCode(parent.countryCode)
-            setPhone(parent.phoneNumber)
         })
+        formData.firstName = parent.firstName;
+        formData.lastName = parent.lastName;
+        formData.email = parent.email;
+        setCode(parent.countryCode)
+        setPhone(parent.phoneNumber)
     }, []);
 
     const handleChange = event => {
@@ -110,7 +110,7 @@ function UpdateParent() {
                         flexDirection: 'row'
                     }}>
                         <Form.Item label="Email" required style={{ flex: 1, marginRight: '10px' }}>
-                            <Input type="email" name="email" onChange={handleChange}  defaultValue={parent.email}/>
+                            <Input type="email" name="email" onChange={handleChange} defaultValue={parent.email} />
                         </Form.Item>
                         <Form.Item label="Phone Number" required style={{ flex: 1, marginLeft: '10px' }}>
                             {/* <Input type="number" name="phoneCode" onChange={handleChange} /> */}
