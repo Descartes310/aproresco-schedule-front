@@ -6,7 +6,7 @@ import Autocomplete from '@material-ui/lab/Autocomplete';
 import { useHistory, useLocation } from 'react-router-dom';
 import { PageHeader, Form, Input, Button, Select } from 'antd';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { updateSchedule, getCoursesByGrade, getScheduleById } from '../../services/Teacher';
+import { updateSchedule, getCourses, getScheduleById } from '../../services/Teacher';
 
 
 function UpdateSchedule(props) {
@@ -41,7 +41,8 @@ function UpdateSchedule(props) {
             setEndDate(end.getFullYear() + '-' + ((end.getMonth()+1) < 10 ? '0'+(end.getMonth()+1) : (end.getMonth()+1)) + '-' + (end.getDate() < 10 ? '0'+end.getDate() : end.getDate()));
             setStartTime(((start.getHours()) < 10 ? '0'+(start.getHours()) : (start.getHours())) +':'+((start.getMinutes()) < 10 ? '0'+(start.getMinutes()) : (start.getMinutes())));
             setEndTime(((end.getHours()) < 10 ? '0'+(end.getHours()) : (end.getHours())) +':'+((end.getMinutes()) < 10 ? '0'+(end.getMinutes()) : (end.getMinutes())));
-            setCourseId(schedule.courseId);
+            setCourseId(schedule.course.id);
+            setCourse(schedule.course.name);
             setRepeatPeriod(schedule.repeatPeriodInDays);
             getAllCourses();
         }
@@ -55,7 +56,7 @@ function UpdateSchedule(props) {
 
     const getAllCourses = () => {
         setLoading(true);
-        getCoursesByGrade(grade).then(data => {
+        getCourses().then(data => {
             if (data) {
                 if (data.content) {
                     setCourses(data.content);
@@ -129,7 +130,7 @@ function UpdateSchedule(props) {
                     }}
                     style={{ width: '80%', marginLeft: '10%' }}
                 >
-                    <div style={{
+                    {/* <div style={{
                         display: 'flex',
                         flexDirection: 'row'
                     }}>
@@ -150,7 +151,7 @@ function UpdateSchedule(props) {
                                 <Select.Option value={12}>12</Select.Option>
                             </Select>
                         </Form.Item>
-                    </div>
+                    </div> */}
                     <div style={{
                         display: 'flex',
                         flexDirection: 'row'
@@ -161,11 +162,13 @@ function UpdateSchedule(props) {
                                 options={courses}
                                 size="small"
                                 onInputChange={(__, newInputValue) => {
+                                    console.log(newInputValue)
                                     setCourse(newInputValue);
                                 }}
                                 onChange={(__, newValue) => {
                                     setCourseId(newValue.id);
                                 }}
+                                inputValue={course}
                                 open={open}
                                 onOpen={() => {
                                     setOpen(true);

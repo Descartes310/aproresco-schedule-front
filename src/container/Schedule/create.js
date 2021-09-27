@@ -6,7 +6,7 @@ import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import { PageHeader, Form, Input, Button, Select } from 'antd';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { createSchedule, getCoursesByGrade } from '../../services/Teacher';
+import { createSchedule, getCourses } from '../../services/Teacher';
 
 function CreateSchedule() {
 
@@ -23,18 +23,16 @@ function CreateSchedule() {
     const [courseId, setCourseId] = useState(null);
     const [startDate, setStartDate] = useState('');
     const [submitting, setSubmitting] = useState(false);
-
     const [repeatPeriod, setRepeatPeriod] = useState('');
-
+    const [selectedCourses, setSelectedCourses] = useState([]);
 
     useEffect(() => {
-        if(grade)
-            getAllCourses();
-    }, [grade]);
+        getAllCourses();
+    }, []);
 
     const getAllCourses = () => {
         setLoading(true);
-        getCoursesByGrade(grade).then(data => {
+        getCourses().then(data => {
             if (data) {
                 if (data.content) {
                     setCourses(data.content);
@@ -60,35 +58,38 @@ function CreateSchedule() {
             return
         }
 
-        if (!courseId) {
-            alert("Please, fill the course!");
+        if (selectedCourses.length <= 0) {
+            alert("Please, fill the courses!");
             return
         }
 
-        setSubmitting(true)
+        // setSubmitting(true)
 
         // console.log(startDate);
         // let date = new Date(startDate);
         // let d = (date.getMonth() + 1).toString().padStart(2, '0') + '/' + date.getDate().toString().padStart(2, '0') + '/' + date.getFullYear();
         let d = startDate.split('-')[1] + '/' + startDate.split('-')[2] + '/' + startDate.split('-')[0];
-        
+
         // console.log(endDate);
         // let fdate = new Date(endDate);
         let f = endDate.split('-')[1] + '/' + endDate.split('-')[2] + '/' + endDate.split('-')[0];
 
-        let data = {
-            course: courses.find(c => c.id === courseId),
-            startDate: d+' '+startTime+':00 '+new Date().toString().split('GMT')[1].split(' ')[0].trim(),
-            endDate: f+' '+endTime+':00 '+new Date().toString().split('GMT')[1].split(' ')[0].trim(),
-            repeatPeriodInDays: repeatPeriod,
-        }
+        let datas = [];
 
-        createSchedule([data]).then(result => {
+        selectedCourses.map(c => {
+            datas.push({
+                course: c,
+                startDate: d + ' ' + startTime + ':00 ' + new Date().toString().split('GMT')[1].split(' ')[0].trim(),
+                endDate: f + ' ' + endTime + ':00 ' + new Date().toString().split('GMT')[1].split(' ')[0].trim(),
+                repeatPeriodInDays: repeatPeriod,
+            })
+        })
+
+        console.log(datas);
+        createSchedule(datas).then(result => {
             history.push(`/schedules`)
         }).finally(() => setSubmitting(false));
     }
-
-    console.log(new Date().toString().split('GMT')[1].split(' ')[0].trim());
 
     return (
 
@@ -111,12 +112,15 @@ function CreateSchedule() {
                     }}
                     style={{ width: '80%', marginLeft: '10%' }}
                 >
-                    <div style={{
+                    {/* <div style={{
                         display: 'flex',
                         flexDirection: 'row'
                     }}>
                         <Form.Item label="Select a grade" required style={{ flex: 1, marginRight: '10px' }}>
-                            <Select onChange={(e) => setGrade(e)}>
+                            <Select
+                                mode="multiple"
+                                onChange={(e) => setGrade(e)}
+                            >
                                 <Select.Option value={null}>Select a grade</Select.Option>
                                 <Select.Option value={1}>1</Select.Option>
                                 <Select.Option value={2}>2</Select.Option>
@@ -132,7 +136,7 @@ function CreateSchedule() {
                                 <Select.Option value={12}>12</Select.Option>
                             </Select>
                         </Form.Item>
-                    </div>
+                    </div> */}
                     <div style={{
                         display: 'flex',
                         flexDirection: 'row'
@@ -141,13 +145,14 @@ function CreateSchedule() {
                             <Autocomplete
                                 id="asynchronous-search"
                                 options={courses}
+                                multiple
                                 size="small"
                                 inputValue={course}
                                 onInputChange={(__, newInputValue) => {
                                     setCourse(newInputValue);
                                 }}
                                 onChange={(__, newValue) => {
-                                    setCourseId(newValue.id);
+                                    setSelectedCourses(newValue);
                                 }}
                                 open={open}
                                 onOpen={() => {
