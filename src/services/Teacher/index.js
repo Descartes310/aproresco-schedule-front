@@ -416,12 +416,13 @@ export const createTeacher = (firstName, lastName, iemail, schoolName, schoolBoa
     }).catch(err => console.log(err));
 }
 
-export const createComment = (studentBooking, content) => {
+export const createComment = (studentBooking, content, parent = null) => {
     let user = JSON.parse(localStorage.getItem('user'));
+
     let data = {
         content,
         studentBooking,
-        studentParent: studentBooking.parent,
+        studentParent: parent,
         studentProfile: studentBooking.studentProfile,
         commenter: { id: user.id }
     }
@@ -447,16 +448,16 @@ export const updateComment = (id, content) => {
 
 export const approveComment = (c) => {
     let user = JSON.parse(localStorage.getItem('user'));
-    let data = {
-        ...c,
-        approver: { id: user.id }
-    }
+    // let data = {
+    //     ...c,
+    //     approver: { id: user.id }
+    // }
     if (c.approver) {
         return axios.delete(`${routes.COMMENT}/${c.id}/approval`).then(res => {
             return res;
         }).catch(err => console.log(err));
     } else {
-        return axios.post(`${routes.COMMENT}/${c.id}/approval/${user.id}`, data).then(res => {
+        return axios.post(`${routes.COMMENT}/${c.id}/approval/${user.id}`).then(res => {
             return res;
         }).catch(err => console.log(err));
     }

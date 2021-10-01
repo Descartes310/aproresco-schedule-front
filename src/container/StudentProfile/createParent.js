@@ -120,7 +120,7 @@ function CreateParent() {
                                     paddingBottom: '5px'
                                 }}
                                 country={country}
-                                // value={phone}
+                                value={phone}
                                 onChange={(value, country, e, formattedValue) => {
                                     setCode(country.dialCode);
                                     let index = value.indexOf(country.dialCode);

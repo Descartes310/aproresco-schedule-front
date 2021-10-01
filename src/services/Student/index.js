@@ -320,7 +320,7 @@ export const getShortMessages = (type, term, page, size, sortName, sortType) => 
 }
 
 export const getChild = (id) => {
-    return axios.get(`${routes.SERVER_ADDRESS}/${routes.STUDENT}?parentId=${id}`)
+    return axios.get(`${routes.STUDENT}?parentId=${id}`)
         .then(res => {
             return res.data;
         })
@@ -338,7 +338,7 @@ export const getShortMessagesTemplates = (type, page, size) => {
 }
 
 export const assignStudentlistToTeacher = (teacherId, studentIds) => {
-    return axios.get(`${routes.SERVER_ADDRESS}/${routes.SCHEDULE}/${teacherId}/${studentIds}`)
+    return axios.get(`${routes.SCHEDULE}/${teacherId}/${studentIds}`)
         .then(res => {
             return res.data;
         })
@@ -348,7 +348,7 @@ export const assignStudentlistToTeacher = (teacherId, studentIds) => {
 }
 
 export const deleteStudentBooking = (studentIds) => {
-    return axios.get(`${routes.SERVER_ADDRESS}/${routes.BOOKING}/disable/${studentIds}`)
+    return axios.get(`${routes.BOOKING}/disable/${studentIds}`)
         .then(res => {
             return res.data;
         })
@@ -369,8 +369,8 @@ export const getBookingAvailability = (bookingId) => {
 
 export const assignStudentToAnotherTeacher = (teacherId, studentId) => {
     let data = {
-        teacherId,
-        studentId
+        availabilityId: teacherId,
+        bookingId: studentId
     }
 
     return axios.post(`${routes.AVAILABILITY}/${teacherId}/booking/${studentId}`, data)
@@ -382,8 +382,8 @@ export const assignStudentToAnotherTeacher = (teacherId, studentId) => {
 }
 export const unAssignStudentToAnotherTeacher = (teacherId, studentId) => {
     let data = {
-        teacherId,
-        studentId
+        availabilityId: teacherId,
+        bookingId: studentId
     }
 
     return axios.delete(`${routes.AVAILABILITY}/${teacherId}/booking/${studentId}`, data)
@@ -400,7 +400,7 @@ export const assignMeetingToAnotherTeacher = (teacherId, url) => {
             "conferenceUrl": url
         }
     }
-    return axios.patch(`${routes.SERVER_ADDRESS}/${routes.AVAILABILITY}/${teacherId}`, data)
+    return axios.patch(`${routes.AVAILABILITY}/${teacherId}`, data)
         .then(res => {
             return res.data;
         })
@@ -440,7 +440,7 @@ export const bridgeStatus = () => {
 }
 
 export const editSubject = (id, subject) => {
-    return axios.get(`${routes.SERVER_ADDRESS}/${routes.BOOKING}/update/${id}?subject=${subject}`)
+    return axios.get(`${routes.BOOKING}/update/${id}?subject=${subject}`)
         .then(res => {
             return res;
         })
@@ -460,7 +460,7 @@ export const getBooking = (id) => {
 }
 
 export const editSubjectGrade = (id, subjects, grades) => {
-    return axios.get(`${routes.SERVER_ADDRESS}/${routes.AVAILABILITY}/update/${id}?subjects=${subjects}&grades=${grades}`)
+    return axios.get(`${routes.AVAILABILITY}/update/${id}?subjects=${subjects}&grades=${grades}`)
         .then(res => {
             return res;
         })
@@ -478,7 +478,7 @@ export const deleteSchedule = (ids) => {
         else
             url += 'id=' + d + '&'
     })
-    return axios.delete(`${routes.SERVER_ADDRESS}/${routes.SCHEDULE}?${url}`).then(res => {
+    return axios.delete(`${routes.SCHEDULE}?${url}`).then(res => {
         return res;
     }).catch(err => console.log(err));
 }
@@ -492,7 +492,7 @@ export const deleteStudentProfiles = (ids) => {
         else
             url += 'id=' + d + '&'
     })
-    return axios.delete(`${routes.SERVER_ADDRESS}/${routes.SCHEDULE}?${url}`).then(res => {
+    return axios.delete(`${routes.SCHEDULE}?${url}`).then(res => {
         return res;
     }).catch(err => console.log(err));
 }
@@ -506,7 +506,7 @@ export const deleteTeacherProfile = (ids) => {
         else
             url += 'id=' + d + '&'
     })
-    return axios.delete(`${routes.SERVER_ADDRESS}/${routes.SCHEDULE}?${url}`).then(res => {
+    return axios.delete(`${routes.SCHEDULE}?${url}`).then(res => {
         return res;
     }).catch(err => console.log(err));
 }
@@ -520,7 +520,7 @@ export const deleteParents = (ids) => {
         else
             url += 'id=' + d + '&'
     })
-    return axios.delete(`${routes.SERVER_ADDRESS}/${routes.PARENT}?${url}`).then(res => {
+    return axios.delete(`${routes.PARENT}?${url}`).then(res => {
         return res;
     }).catch(err => console.log(err));
 }
@@ -534,7 +534,7 @@ export const deleteAvailabilities = (ids) => {
         else
             url += 'id=' + d + '&'
     })
-    return axios.delete(`${routes.SERVER_ADDRESS}/${routes.AVAILABILITY}?${url}`).then(res => {
+    return axios.delete(`${routes.AVAILABILITY}?${url}`).then(res => {
         return res;
     }).catch(err => console.log(err));
 }
@@ -548,7 +548,7 @@ export const deleteBookings = (ids) => {
         else
             url += 'id=' + d + '&'
     })
-    return axios.delete(`${routes.SERVER_ADDRESS}/${routes.BOOKING}?${url}`).then(res => {
+    return axios.delete(`${routes.BOOKING}?${url}`).then(res => {
         return res;
     }).catch(err => console.log(err));
 }

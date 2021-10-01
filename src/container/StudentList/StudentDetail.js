@@ -61,7 +61,7 @@ function StudentDetail(props) {
         })
     }
     const getComments = () => {
-        getBookingComments().then(data => {
+        getBookingComments(studentDetail.id).then(data => {
             if (data) {
                 if (data.content) {
                     setComments(data.content);
@@ -98,7 +98,7 @@ function StudentDetail(props) {
 
     const handleSubmit = () => {
         if (comment == null) {
-            createComment(studentDetail, content).then(data => {
+            createComment(studentDetail, content, parent).then(data => {
                 // history.push('/studentlist')
                 setContent('');
                 getComments();

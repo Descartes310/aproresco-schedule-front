@@ -29,18 +29,24 @@ function UpdateParent() {
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
 
-    console.log(parent);
-
     useEffect(() => {
-        getCountry().then(data => {
-            setCountry(data.countryCode.toString().toLowerCase());
-        })
+
         formData.firstName = parent.firstName;
         formData.lastName = parent.lastName;
         formData.email = parent.email;
         setCode(parent.countryCode)
         setPhone(parent.phoneNumber)
+        getCountry().then(data => {
+            // setCountry(data.countryCode.toString().toLowerCase());
+        })
     }, []);
+
+    // useEffect(() => {
+    //     if (country) {
+    //         let index = phone.indexOf(code)
+    //         setPhone(phone.slice(0, index) + phone.slice(index + code.length))
+    //     }
+    // }, [country]);
 
     const handleChange = event => {
         setFormData({
@@ -79,7 +85,6 @@ function UpdateParent() {
     }
 
     return (
-
         <div>
             <PageHeader
                 ghost={false}
@@ -132,6 +137,7 @@ function UpdateParent() {
                                 country={country}
                                 value={phone}
                                 onChange={(value, country, e, formattedValue) => {
+                                    console.log(value, country)
                                     setCode(country.dialCode);
                                     let index = value.indexOf(country.dialCode);
                                     setPhone(value.slice(0, index) + value.slice(index + country.dialCode.length))

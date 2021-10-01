@@ -100,7 +100,7 @@ const UpdateSubject = () => {
                     <Form.Item style={{ flex: 1, marginRight: '40px', marginTop: '20px' }}>
                         <Button disabled={submitting} type="primary" size="large" htmlType="submit">
                             {
-                                submitting ? 'Loading...' : 'Create a subject'
+                                submitting ? 'Loading...' : 'Update a subject'
                             }
                         </Button>
                     </Form.Item>
